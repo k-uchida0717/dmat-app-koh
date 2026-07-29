@@ -746,8 +746,8 @@ renderers.hosp=function(){
       </div>
       <div class="count" id="hCount" style="margin-bottom:8px"></div>
       <div class="tablewrap"><table><thead><tr>
-        <th style="width:80px">状況</th><th style="width:60px">震度</th><th>名称</th><th style="width:90px">市区町村</th><th style="width:120px" class="sortable" data-sort="group">病院評価群<span class="sarrow"></span></th><th style="width:120px" class="sortable" data-sort="policy">大方針<span class="sarrow"></span></th>
-        <th style="width:120px" class="sortable" data-sort="danger">被害<span class="sarrow"></span></th><th style="width:130px" class="sortable" data-sort="life">ライフライン<span class="sarrow"></span></th><th style="width:70px">転送要</th><th style="width:44px"></th>
+        <th style="width:80px" class="sortable" data-sort="status">状況<span class="sarrow"></span></th><th style="width:60px" class="sortable" data-sort="shindo">震度<span class="sarrow"></span></th><th>名称</th><th style="width:90px">市区町村</th><th style="width:120px" class="sortable" data-sort="group">病院評価群<span class="sarrow"></span></th><th style="width:120px" class="sortable" data-sort="policy">大方針<span class="sarrow"></span></th>
+        <th style="width:120px" class="sortable" data-sort="danger">被害<span class="sarrow"></span></th><th style="width:130px" class="sortable" data-sort="life">ライフライン<span class="sarrow"></span></th><th style="width:70px" class="sortable" data-sort="trans">転送要<span class="sarrow"></span></th><th style="width:44px"></th>
       </tr></thead><tbody id="hBody"></tbody></table><div class="empty" id="hEmpty">該当する医療機関がありません。</div></div>`;
     p.dataset.built=1;
     $('#hQ').addEventListener('input',e=>{hospFilter.q=e.target.value;renderHospBody()});
@@ -783,12 +783,30 @@ function policyRank(v){v=(v==null?'':String(v)).trim();
   if(v.indexOf('籠城')>=0)return 2;
   if(v.indexOf('通常運用')>=0||v.indexOf('病床拡張')>=0)return 1;
   return 0;}
+function statusRank(h){
+  if(hIsNeed(h))return 4;
+  if(h.need==='未')return 1;
+  if(h.policy&&h.policy.includes('避難'))return 3;
+  if(h.policy&&h.policy.includes('籠城'))return 2;
+  return 0;
+}
+function shindoRank(v){v=(v||'');
+  if(v.includes('7'))return 7;
+  if(v.includes('6強'))return 6.5; if(v.includes('6弱'))return 6.0;
+  if(v.includes('5強'))return 5.5; if(v.includes('5弱'))return 5.0;
+  if(v.includes('4'))return 4; if(v.includes('3'))return 3;
+  if(v.includes('2'))return 2; if(v.includes('1'))return 1;
+  return 0;
+}
 function hospSortVal(h,key){
   switch(key){
+    case 'status': return statusRank(h);
+    case 'shindo': return shindoRank(h.shindo);
     case 'group':  return groupRank(h.group);
     case 'policy': return policyRank(h.policy);
     case 'danger': return dangerList(h).length;
     case 'life':   return lifeList(h).length;
+    case 'trans':  return hTransNeed(h);
   }
   return 0;
 }
@@ -1358,12 +1376,45 @@ const LINKS=[
     {t:'JARTIC 道路交通情報',u:'https://www.jartic.or.jp/',d:'全国の通行止め・規制をリアルタイム集約。'},
     {t:'NEXCO西日本 交通情報',u:'https://www.w-nexco.co.jp/traffic/',d:'九州道など高速道路の状況。'},
     {t:'JR九州 運行情報',u:'https://www.jrkyushu.co.jp/trafficinfo/',d:'新幹線・在来線の運転状況。'},
+    {t:'国交省 九州地方整備局 道路情報',u:'https://www.qsr.mlit.go.jp/road/',d:'直轄国道（3号・57号・208号等）の規制。'},
+    {t:'熊本県 県管理道路 通行規制',u:'https://www.pref.kumamoto.jp/soshiki/163/',d:'県道・市町村道の通行規制。'},
+    {t:'ジョルダン 鉄道運行情報',u:'https://www.jorudan.co.jp/unkou/',d:'新幹線・在来線の運転見合わせ・再開。'},
+    {t:'Yahoo! 道路交通情報',u:'https://typhoon.yahoo.co.jp/weather/jp/road/',d:'高速の渋滞・通行止めを横断確認。'},
+  ]},
+  {group:'一次情報・報道（地震・津波）',items:[
+    {t:'気象庁 防災情報ポータル',u:'https://www.jma.go.jp/bosai/#pattern=earthquake_volcano',d:'津波・長周期地震動・余震など総合発表。'},
+    {t:'気象庁 警報・注意報',u:'https://www.jma.go.jp/bosai/#pattern=warning',d:'都道府県別の発表中レベル情報。'},
+    {t:'気象庁 天気予報・警報注意報',u:'https://www.jma.go.jp/bosai/forecast/',d:'地域を選び警報・注意報を確認。'},
+    {t:'NHK 地震・津波 最新ニュース',u:'https://www3.nhk.or.jp/news/word/0000896.html',d:'被害・救助・津波の続報を随時更新。'},
+    {t:'内閣府 防災情報',u:'https://www.bousai.go.jp/',d:'政府の災害対応・支援制度。'},
+    {t:'Yahoo!天気・災害（地震）',u:'https://typhoon.yahoo.co.jp/weather/jp/earthquake/',d:'地図で震度・避難所を確認。'},
+  ]},
+  {group:'被災自治体（熊本）',items:[
+    {t:'熊本県 公式・防災',u:'https://www.pref.kumamoto.jp/',d:'災害対策本部・県内避難情報。'},
+    {t:'宇城市（震度7）',u:'https://www.city.uki.kumamoto.jp/',d:'最大震度地点。避難所・緊急情報。'},
+    {t:'氷川町（震度7）',u:'https://www.town.hikawa.kumamoto.jp/',d:'最大震度地点の地元自治体情報。'},
+    {t:'八代市（震度6強・沿岸）',u:'https://www.city.yatsushiro.lg.jp/',d:'津波注意報下の避難情報。'},
+  ]},
+  {group:'通信キャリア障害・安否確認',items:[
+    {t:'NTT web171 災害用伝言板',u:'https://www.web171.jp/',d:'安否の登録・確認。電話は171。'},
+    {t:'ドコモ 通信障害情報',u:'https://www.docomo.ne.jp/info/network/',d:'エリアごとの障害・復旧状況。'},
+    {t:'au（KDDI） 障害・メンテ情報',u:'https://www.au.com/mobile/trouble/',d:'エリアの障害状況。'},
+    {t:'ソフトバンク 重要なお知らせ',u:'https://www.softbank.jp/mobile/info/personal/important/',d:'障害・災害関連の告知。'},
+    {t:'楽天モバイル 障害情報',u:'https://network.mobile.rakuten.co.jp/information/',d:'エリアの障害状況。'},
+  ]},
+  {group:'DMAT派遣・災害医療（追加）',items:[
+    {t:'DMAT事務局（日本DMAT）',u:'https://www.dmat.jp/',d:'派遣要請・活動方針の公式情報。'},
+    {t:'熊本県 医療・災害対策',u:'https://www.pref.kumamoto.jp/soshiki/45/',d:'県の災害医療体制・受援情報。'},
   ]},
 ];
 renderers.links=function(){
   const p=$('#panel-links');
   if(!p.dataset.built){
     let html=`<div class="note"><b>外部リンク集：</b>DMAT活動・災害情報の主要サイトへ。タップで新規タブで開きます（オンライン接続が必要）。</div>`;
+    html+=`<a class="res-card" href="kumamoto_earthquake_dashboard.html" target="_blank" rel="noopener" style="text-decoration:none;color:inherit;display:block;border:1.5px solid var(--accent);background:linear-gradient(180deg,rgba(11,107,94,.12),rgba(11,107,94,.02));margin-bottom:16px">
+      <div class="rc-title" style="font-size:15px">🌐 熊本県 震度7 地震情報ダッシュボードを開く <span style="color:var(--accent)">↗</span></div>
+      <div class="rc-desc">複合災害ステータス・一次情報・被害・避難・交通・通信・DMATルート・津波余震・大雨キキクルを1画面に集約した災害情報ページ（同梱・オフライン対応）。</div>
+      <div class="rc-meta">kumamoto_earthquake_dashboard.html</div></a>`;
     LINKS.forEach(g=>{
       html+=`<div class="sectitle"><span class="em">🔗</span>${esc(g.group)}</div><div class="grid g2" style="margin-bottom:16px">`;
       g.items.forEach(it=>{html+=`<a class="res-card" href="${it.u}" target="_blank" rel="noopener" style="text-decoration:none;color:inherit">
@@ -1526,13 +1577,28 @@ if(window.__noSample){
 
 </script>
 <script>
+var __reloading=false;
+function showUpdateBanner(){
+  if(document.getElementById('updbar'))return;
+  var b=document.createElement('div');b.id='updbar';
+  b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:2000;background:#0b6b5e;color:#fff;display:flex;align-items:center;justify-content:center;gap:14px;padding:10px 16px;font-size:13px;font-weight:700;box-shadow:0 6px 20px -6px rgba(0,0,0,.45)';
+  var msg=document.createElement('span');msg.textContent='🔄 新しいバージョンがあります';
+  var btn=document.createElement('button');btn.textContent='今すぐ更新';
+  btn.style.cssText='background:#fff;color:#0b6b5e;border:none;padding:6px 14px;border-radius:7px;font-weight:800;cursor:pointer';
+  btn.onclick=function(){if(__reloading)return;__reloading=true;btn.textContent='更新中…';location.reload();};
+  var x=document.createElement('button');x.textContent='✕';x.title='あとで';
+  x.style.cssText='background:transparent;color:#fff;border:none;font-size:15px;cursor:pointer;line-height:1';
+  x.onclick=function(){b.remove();};
+  b.appendChild(msg);b.appendChild(btn);b.appendChild(x);
+  document.body.appendChild(b);
+}
 if('serviceWorker' in navigator){
   window.addEventListener('load',function(){
     navigator.serviceWorker.register('sw.js').then(function(reg){
       reg.addEventListener('updatefound',function(){
         var nw=reg.installing;
         nw && nw.addEventListener('statechange',function(){
-          if(nw.state==='installed' && navigator.serviceWorker.controller){showToast('新しいバージョンがあります。再読み込みで更新されます。',true);}
+          if(nw.state==='installed' && navigator.serviceWorker.controller){showUpdateBanner();}
         });
       });
     }).catch(function(e){console.warn('SW登録失敗',e);});

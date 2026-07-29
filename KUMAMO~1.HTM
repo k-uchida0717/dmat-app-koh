@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>熊本県 震度7 地震情報ダッシュボード</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap');
+
+  :root{
+    --ink:#15191f;
+    --paper:#f6f4ef;
+    --panel:#ffffff;
+    --line:#dcd7cd;
+    --alert:#c8442f;       /* 防災レッド */
+    --alert-deep:#8f2c1d;
+    --amber:#d98a17;
+    --safe:#3f7d4e;
+    --muted:#6b6459;
+    --shadow:0 1px 0 rgba(0,0,0,.04), 0 8px 24px -16px rgba(0,0,0,.25);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:'Zen Kaku Gothic New',system-ui,sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    padding:0 0 64px;
+  }
+  .mono{font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums}
+
+  /* ---- Header ---- */
+  header{
+    background:var(--ink);
+    color:#f6f4ef;
+    padding:22px clamp(16px,4vw,40px) 26px;
+    position:relative;
+    overflow:hidden;
+  }
+  header::before{
+    content:"";position:absolute;inset:0;
+    background:repeating-linear-gradient(45deg,transparent,transparent 14px,rgba(200,68,47,.08) 14px,rgba(200,68,47,.08) 16px);
+    pointer-events:none;
+  }
+  .tag{
+    display:inline-flex;align-items:center;gap:7px;
+    background:var(--alert);color:#fff;
+    font-size:12px;font-weight:700;letter-spacing:.08em;
+    padding:5px 11px;border-radius:2px;margin-bottom:14px;
+  }
+  .tag .dot{width:7px;height:7px;border-radius:50%;background:#fff;animation:pulse 1.6s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+  h1{font-size:clamp(22px,4.4vw,34px);font-weight:900;letter-spacing:-.01em;position:relative}
+  .sub{color:#b8b2a6;font-size:14px;margin-top:6px;position:relative}
+  .snapshot-time{
+    margin-top:14px;font-size:12.5px;color:#d9d3c7;position:relative;
+    display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;
+  }
+  .snapshot-time b{color:#fff;font-weight:700}
+
+  /* ---- Layout ---- */
+  main{max-width:1080px;margin:0 auto;padding:0 clamp(16px,4vw,40px)}
+
+  /* ---- TOC nav ---- */
+  .toc{
+    margin-top:16px;display:flex;flex-wrap:wrap;gap:7px;position:relative;z-index:3;
+  }
+  .toc a{
+    text-decoration:none;font-size:12px;font-weight:700;color:#d9d3c7;cursor:pointer;
+    background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);
+    padding:6px 11px;border-radius:99px;transition:background .14s,color .14s;
+    display:inline-flex;align-items:center;gap:5px;
+  }
+  .toc a:hover{background:var(--alert);color:#fff;border-color:var(--alert)}
+  .toc a:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+  .toc a .n{font-family:'JetBrains Mono',monospace;font-size:10px;opacity:.7}
+
+  /* ---- Status board ---- */
+  .statusboard{
+    margin-top:16px;background:#11151b;border:1px solid #2a313c;border-radius:12px;
+    padding:16px clamp(14px,3vw,22px);position:relative;z-index:3;box-shadow:var(--shadow);
+  }
+  .sb-head{display:flex;align-items:center;gap:10px;margin-bottom:13px}
+  .sb-head h2{color:#fff;font-size:15px;font-weight:800;letter-spacing:.02em}
+  .sb-head .updated{margin-left:auto;font-size:11px;color:#8b93a0;font-family:'JetBrains Mono',monospace}
+  .sb-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:10px}
+  .sb-card{
+    display:block;text-decoration:none;border-radius:10px;padding:13px 14px;
+    border:1.5px solid;position:relative;overflow:hidden;
+    transition:transform .14s ease;
+  }
+  .sb-card:hover{transform:translateY(-2px)}
+  .sb-card:focus-visible{outline:3px solid #fff;outline-offset:2px}
+  .sb-card .cat{font-size:11px;font-weight:700;letter-spacing:.05em;opacity:.85}
+  .sb-card .state{font-size:16px;font-weight:900;margin:5px 0 3px;line-height:1.15}
+  .sb-card .meta{font-size:11px;line-height:1.45;opacity:.92}
+  .sb-card .live{position:absolute;top:11px;right:12px;font-size:9.5px;font-weight:700;opacity:.6}
+  .lv-ok{background:#14241a;border-color:#2e6b43;color:#bfe9cd}
+  .lv-ok .state{color:#7fe3a0}
+  .lv-info{background:#142231;border-color:#2f5d86;color:#bcdcf5}
+  .lv-info .state{color:#7fc1f2}
+  .lv-watch{background:#2a2410;border-color:#7d6a1c;color:#f0e3a8}
+  .lv-watch .state{color:#f2d65c}
+  .lv-warn{background:#2e1c0e;border-color:#9a5a1c;color:#f5d6b0}
+  .lv-warn .state{color:#f4a85c}
+  .lv-alert{background:#2f1411;border-color:#a8362a;color:#f5c0b8}
+  .lv-alert .state{color:#ff6b56}
+  .lv-crit{background:#3a0f1a;border-color:#c01d3e;color:#ffc6d2;animation:flash 1.3s infinite}
+  .lv-crit .state{color:#ff4d6d}
+  @keyframes flash{0%,100%{box-shadow:0 0 0 0 rgba(192,29,62,.55)}50%{box-shadow:0 0 0 4px rgba(192,29,62,0)}}
+  .sb-card .bar{display:flex;gap:3px;margin-top:8px}
+  .sb-card .bar i{height:4px;flex:1;border-radius:2px;background:currentColor;opacity:.22}
+  .sb-card .bar i.on{opacity:1}
+  .sb-legend{margin-top:12px;font-size:10.5px;color:#8b93a0;display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center}
+  .sb-legend b{color:#c4cbd4;font-weight:700}
+  .sb-note{margin-top:9px;font-size:10.5px;color:#7d8593;line-height:1.5}
+
+  html{scroll-behavior:smooth}
+  section{scroll-margin-top:14px}
+
+  .keyfacts{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+    gap:1px;background:var(--line);
+    border:1px solid var(--line);border-radius:8px;overflow:hidden;
+    margin-top:-18px;position:relative;z-index:2;box-shadow:var(--shadow);
+  }
+  .kf{background:var(--panel);padding:16px 18px}
+  .kf .label{font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.06em;margin-bottom:4px}
+  .kf .val{font-size:23px;font-weight:900;line-height:1.1}
+  .kf .val.red{color:var(--alert)}
+  .kf .unit{font-size:13px;font-weight:500;color:var(--muted)}
+
+  section{margin-top:34px}
+  .sec-head{display:flex;align-items:baseline;gap:12px;margin-bottom:14px;border-bottom:2px solid var(--ink);padding-bottom:8px}
+  .sec-head .num{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:var(--alert)}
+  .sec-head h2{font-size:18px;font-weight:800}
+  .sec-head .hint{margin-left:auto;font-size:11.5px;color:var(--muted)}
+
+  /* ---- Live source links ---- */
+  .links{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+  .lk{
+    display:block;background:var(--panel);border:1px solid var(--line);
+    border-radius:8px;padding:15px 16px;text-decoration:none;color:var(--ink);
+    transition:transform .14s ease,box-shadow .14s ease,border-color .14s;
+    position:relative;
+  }
+  .lk:hover{transform:translateY(-2px);box-shadow:var(--shadow);border-color:#c3bcae}
+  .lk:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+  .lk .src{font-size:11px;font-weight:700;color:var(--alert);letter-spacing:.04em}
+  .lk .ti{font-size:15px;font-weight:700;margin:3px 0 4px}
+  .lk .ds{font-size:12.5px;color:var(--muted);line-height:1.5}
+  .lk .arrow{position:absolute;top:14px;right:14px;font-size:13px;color:var(--muted)}
+  .lk.primary{border-color:var(--alert);border-width:1.5px;background:linear-gradient(180deg,#fff,#fdf3f0)}
+  .lk.primary .src{color:var(--alert-deep)}
+
+  /* ---- Snapshot data table ---- */
+  .snap{background:var(--panel);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+  .snap-row{display:grid;grid-template-columns:128px 1fr;border-top:1px solid var(--line)}
+  .snap-row:first-child{border-top:none}
+  .snap-row .k{background:#faf8f3;padding:11px 14px;font-size:12.5px;font-weight:700;color:var(--muted);border-right:1px solid var(--line)}
+  .snap-row .v{padding:11px 14px;font-size:13.5px}
+  .pill{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;margin-right:5px}
+  .pill.safe{background:#e6f0e8;color:var(--safe)}
+  .pill.warn{background:#fbf0db;color:var(--amber)}
+  .pill.alert{background:#f7e1dc;color:var(--alert-deep)}
+
+  .note{
+    background:#fbf4e6;border:1px solid #ecd9ab;border-left:4px solid var(--amber);
+    border-radius:6px;padding:14px 16px;font-size:13px;color:#6a5320;margin-top:14px;
+  }
+  .note b{color:#4f3c11}
+
+  .disclaimer{
+    margin-top:40px;padding:18px 20px;background:#1d2229;color:#cfc9bd;
+    border-radius:8px;font-size:12.5px;line-height:1.7;
+  }
+  .disclaimer b{color:#fff}
+  .disclaimer .how{margin-top:10px;padding-top:10px;border-top:1px solid #333a44}
+
+  footer{text-align:center;color:var(--muted);font-size:11.5px;margin-top:28px}
+
+  @media(max-width:520px){
+    .snap-row{grid-template-columns:96px 1fr}
+    .kf .val{font-size:20px}
+  }
+</style>
+</head>
+<body>
+<header>
+  <span class="tag"><span class="dot"></span>災害情報モニター・運用中</span>
+  <h1>熊本県 震度7 地震情報</h1>
+  <div class="sub">2026年7月28日 16:27頃発生／熊本県熊本地方震源・M7.1・深さ約10km ＋ 津波注意報・活発な余震</div>
+  <div class="snapshot-time">
+    <span>スナップショット時刻：<b id="snapTime">7月28日 18:00頃</b></span>
+    <span>このページを開いた時刻：<b id="openTime" class="mono">—</b></span>
+  </div>
+</header>
+
+<main>
+  <!-- TOC -->
+  <nav class="toc" aria-label="目次">
+    <a role="button" tabindex="0" data-target="s-source"><span class="n">01</span>一次情報</a>
+    <a role="button" tabindex="0" data-target="s-higai"><span class="n">02</span>被害</a>
+    <a role="button" tabindex="0" data-target="s-hinan"><span class="n">03</span>避難</a>
+    <a role="button" tabindex="0" data-target="s-kotsu"><span class="n">04</span>交通・道路</a>
+    <a role="button" tabindex="0" data-target="s-tsushin"><span class="n">05</span>通信</a>
+    <a role="button" tabindex="0" data-target="s-dmat"><span class="n">06</span>DMATルート</a>
+    <a role="button" tabindex="0" data-target="s-taifu"><span class="n">07</span>津波・余震</a>
+    <a role="button" tabindex="0" data-target="s-oame"><span class="n">08</span>大雨・洪水</a>
+    <a role="button" tabindex="0" data-target="s-shindo"><span class="n">09</span>震度</a>
+    <a href="index.html" target="_blank" rel="noopener" style="background:rgba(11,107,94,.25);border-color:rgba(11,107,94,.6)">🚑 医療支援プラットフォーム ↗</a>
+  </nav>
+
+  <!-- STATUS BOARD -->
+  <div class="statusboard">
+    <div class="sb-head">
+      <h2>🛡 複合災害ステータス</h2>
+      <span class="updated">確認：7/28 18:00頃</span>
+    </div>
+    <div class="sb-grid">
+      <!-- 津波（最優先・発表中は点滅） -->
+      <a class="sb-card lv-crit" href="https://www.jma.go.jp/bosai/map.html#contents=tsunami" target="_blank" rel="noopener" data-key="tsunami">
+        <span class="live">LIVE↗</span>
+        <div class="cat">津波</div>
+        <div class="state">注意報 発表中</div>
+        <div class="meta">有明海・八代海に津波注意報。海・川から離れ高台へ。</div>
+        <div class="bar"><i class="on"></i><i class="on"></i><i></i><i></i><i></i></div>
+      </a>
+      <!-- 余震（活発） -->
+      <a class="sb-card lv-alert" href="https://www.jma.go.jp/bosai/map.html#contents=earthquake" target="_blank" rel="noopener" data-key="aftershock">
+        <span class="live">LIVE↗</span>
+        <div class="cat">余震</div>
+        <div class="state">活発・切迫注意</div>
+        <div class="meta">既に震度5弱(M6.1)等の余震。今後1週間、最大震度7に注意。</div>
+        <div class="bar"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div>
+      </a>
+      <!-- 道路（埼玉→熊本ルート） -->
+      <a class="sb-card lv-warn" href="https://www.jartic.or.jp/" target="_blank" rel="noopener" data-key="road">
+        <span class="live">LIVE↗</span>
+        <div class="cat">交通（→熊本ルート）</div>
+        <div class="state">鉄道広範囲で停止</div>
+        <div class="meta">JR九州全線・熊本電鉄運転見合わせ。山陽新幹線は再開。熊本空港は滑走路点検。</div>
+        <div class="bar"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></div>
+      </a>
+      <!-- 通信 -->
+      <a class="sb-card lv-watch" href="https://www.docomo.ne.jp/info/network/" target="_blank" rel="noopener" data-key="tel">
+        <span class="live">LIVE↗</span>
+        <div class="cat">通信・電力</div>
+        <div class="state">停電 約4.8万戸</div>
+        <div class="meta">九電送配電で熊本県内約4.8万戸停電。停電に伴う通信影響に注意。伝言板171/web171運用。</div>
+        <div class="bar"><i class="on"></i><i class="on"></i><i></i><i></i><i></i></div>
+      </a>
+      <!-- 大雨・土砂 -->
+      <a class="sb-card lv-watch" href="https://www.jma.go.jp/bosai/risk/" target="_blank" rel="noopener" data-key="oame">
+        <span class="live">LIVE↗</span>
+        <div class="cat">大雨・土砂</div>
+        <div class="state">地盤緩み注意</div>
+        <div class="meta">揺れで地盤が緩み、少しの雨でも土砂災害の危険。降雨に警戒。</div>
+        <div class="bar"><i class="on"></i><i class="on"></i><i></i><i></i><i></i></div>
+      </a>
+      <!-- 被害・ライフライン -->
+      <a class="sb-card lv-warn" href="https://www.jma.go.jp/bosai/map.html#contents=earthquake" target="_blank" rel="noopener" data-key="fire">
+        <span class="live">情報↗</span>
+        <div class="cat">被害状況</div>
+        <div class="state">負傷者・火災 発生</div>
+        <div class="meta">宇城で119番相次ぎ複数負傷・火災。熊本城石垣が一部崩落。全容確認中。</div>
+        <div class="bar"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></div>
+      </a>
+    </div>
+    <div class="sb-legend">
+      <span><b>レベルの色：</b></span>
+      <span style="color:#7fe3a0">●安全/0</span>
+      <span style="color:#7fc1f2">●情報1</span>
+      <span style="color:#f2d65c">●注意2</span>
+      <span style="color:#f4a85c">●警戒3</span>
+      <span style="color:#ff6b56">●危険4</span>
+      <span style="color:#ff4d6d">●切迫5(点滅)</span>
+    </div>
+    <div class="sb-note">
+      ※ 色は<b>私が確認した最新値</b>を表示する手動更新式です。実際のレベルが変わった瞬間に自動で色は変わりません。各カードをタップすると気象庁キキクル等のライブページが開くので、緊急時はそちらで実値を確認してください。値の書き換えは「更新して」とお申し付けを。
+    </div>
+  </div>
+
+  <!-- KEY FACTS -->
+  <div class="keyfacts">
+    <div class="kf"><div class="label">最大震度</div><div class="val red">7<span class="unit"> 宇城市・氷川町</span></div></div>
+    <div class="kf"><div class="label">マグニチュード</div><div class="val mono">7.1</div></div>
+    <div class="kf"><div class="label">震源の深さ</div><div class="val mono">約10<span class="unit">km</span></div></div>
+    <div class="kf"><div class="label">津波</div><div class="val red">注意報</div></div>
+  </div>
+
+  <!-- 1. LIVE SOURCES -->
+  <section id="s-source">
+    <div class="sec-head">
+      <span class="num">01</span><h2>最新の一次情報を開く</h2>
+      <span class="hint">開くたびに公式サイトの最新へ</span>
+    </div>
+    <div class="links">
+      <a class="lk primary" href="https://www.jma.go.jp/bosai/map.html#contents=earthquake" target="_blank" rel="noopener">
+        <div class="src">気象庁｜最優先・ファクト基準</div>
+        <div class="ti">地震情報マップ</div>
+        <div class="ds">各地の震度・震源・津波の一次情報。当ページの事実確認の基準。</div>
+        <span class="arrow">↗</span>
+      </a>
+      <a class="lk primary" href="https://www.jma.go.jp/bosai/#pattern=earthquake_volcano" target="_blank" rel="noopener">
+        <div class="src">気象庁</div>
+        <div class="ti">防災情報ポータル</div>
+        <div class="ds">津波・長周期地震動・余震など総合的な発表。</div>
+        <span class="arrow">↗</span>
+      </a>
+      <a class="lk primary" href="https://www.jma.go.jp/bosai/map.html#contents=tsunami" target="_blank" rel="noopener">
+        <div class="src">気象庁｜津波</div>
+        <div class="ti">津波情報</div>
+        <div class="ds">有明海・八代海の津波注意報。発表中の津波情報を最優先で確認。</div>
+        <span class="arrow">↗</span>
+      </a>
+      <a class="lk" href="https://www3.nhk.or.jp/news/word/0000896.html" target="_blank" rel="noopener">
+        <div class="src">NHK</div>
+        <div class="ti">地震・津波 最新ニュース</div>
+        <div class="ds">被害・救助・津波の続報を随時更新。</div>
+        <span class="arrow">↗</span>
+      </a>
+      <a class="lk" href="https://www.pref.kumamoto.jp/" target="_blank" rel="noopener">
+        <div class="src">熊本県</div>
+        <div class="ti">県公式・防災</div>
+        <div class="ds">災害対策本部・県内避難情報。</div>
+        <span class="arrow">↗</span>
+      </a>
+      <a class="lk" href="https://www.city.uki.kumamoto.jp/" target="_blank" rel="noopener">
+        <div class="src">宇城市（震度7）</div>
+        <div class="ti">市公式・避難所</div>
+        <div class="ds">最大震度地点。避難所開設・緊急情報。</div>
+        <span class="arrow">↗</span>
+      </a>
+      <a class="lk" href="https://www.town.hikawa.kumamoto.jp/" target="_blank" rel="noopener">
+        <div class="src">氷川町（震度7）</div>
+        <div class="ti">町公式・防災</div>
+        <div class="ds">最大震度地点の地元自治体情報。</div>
+        <span class="arrow">↗</span>
+      </a>
+      <a class="lk" href="https://www.city.yatsushiro.lg.jp/" target="_blank" rel="noopener">
+        <div class="src">八代市（震度6強）</div>
+        <div class="ti">市公式・避難所</div>
+        <div class="ds">沿岸部。津波注意報下の避難情報。</div>
+        <span class="arrow">↗</span>
+      </a>
+      <a class="lk" href="https://www.bousai.go.jp/" target="_blank" rel="noopener">
+        <div class="src">内閣府</div>
+        <div class="ti">防災情報</div>
+        <div class="ds">政府の災害対応・支援制度。</div>
+        <span class="arrow">↗</span>
+      </a>
+      <a class="lk" href="https://typhoon.yahoo.co.jp/weather/jp/earthquake/" target="_blank" rel="noopener">
+        <div class="src">Yahoo!天気・災害</div>
+        <div class="ti">地震情報・避難所マップ</div>
+        <div class="ds">地図ベースで震度・避難所を確認。</div>
+        <span class="arrow">↗</span>
+      </a>
+    </div>
+    <div class="note">
+      <b>使い方：</b>このカードはタップすると各公式サイトの「現在の最新ページ」を開きます。常に気象庁を事実確認の基準にしてください。下のデータ欄（02〜05）はスナップショットで、私（Claude）に「更新して」と伝えると気象庁中心に再検索・ファクトチェックして書き換えます。
+    </div>
+  </section>
+
+  <!-- 2. 被害状況 -->
+  <section id="s-higai">
+    <div class="sec-head"><span class="num">02</span><h2>被害状況</h2><span class="hint">18:00頃時点・情報収集中</span></div>
+    <div class="note" style="margin-top:0;background:#f7e8e3;border-color:#e0b3a6;border-left-color:var(--alert)">
+      <b style="color:var(--alert-deep)">発生直後で被害の全容は未確定です。</b>震度7・深さ約10kmの直下型地震のため、家屋倒壊・火災・土砂災害・ライフライン寸断の危険が高い状況です。数値は今後大きく変わります。必ず気象庁・自治体の最新発表を確認してください。
+    </div>
+    <div class="snap" style="margin-top:12px">
+      <div class="snap-row"><div class="k">人的被害</div><div class="v"><span class="pill alert">負傷者複数</span>宇城広域連合消防本部管内で119番が相次ぎ、複数の負傷者。氷川町の特養で入所者・職員が負傷。全容は確認中。</div></div>
+      <div class="snap-row"><div class="k">火災</div><div class="v"><span class="pill alert">発生</span>宇城市などで火災が発生、消防が対応中。</div></div>
+      <div class="snap-row"><div class="k">津波</div><div class="v"><span class="pill alert">注意報 継続中</span>有明海・八代海に津波注意報が継続。長崎・島原港にも注意報。沿岸・河口は高台へ。</div></div>
+      <div class="snap-row"><div class="k">建物</div><div class="v">熊本城の石垣が一部崩落（来場客にけがなし・避難済み）。震度7・6強地域で建物被害を調査中。</div></div>
+      <div class="snap-row"><div class="k">停電</div><div class="v"><span class="pill alert">約4.8万戸</span>九州電力送配電によると熊本県内で約4万8千戸が停電（17時時点）。復旧見込みは確認中。</div></div>
+      <div class="snap-row"><div class="k">原子力施設</div><div class="v"><span class="pill safe">異常なし</span>原子力規制庁：川内・玄海・伊方原発に異常なし、放射線量にも変化なし。</div></div>
+      <div class="snap-row"><div class="k">政府対応</div><div class="v">高市総理が被害状況把握・災害応急対策に総力を挙げると表明、関係省庁に指示。偽情報にも注意を。</div></div>
+    </div>
+  </section>
+
+  <!-- 3. 避難 -->
+  <section id="s-hinan">
+    <div class="sec-head"><span class="num">03</span><h2>避難・自治体対応</h2><span class="hint">18:00頃時点</span></div>
+    <div class="snap">
+      <div class="snap-row"><div class="k">津波避難</div><div class="v"><span class="pill alert">最優先</span>有明海・八代海沿岸（八代市・宇土市・宇城市・天草等）は津波注意報。海岸・河川から離れ直ちに高台へ。</div></div>
+      <div class="snap-row"><div class="k">災害対策</div><div class="v">熊本県・関係市町村で災害対策本部設置の見込み。政府も対応本部を設置へ。</div></div>
+      <div class="snap-row"><div class="k">避難所</div><div class="v">震度7・6強地域で避難所開設が進む見込み。各自治体・Yahoo!避難所マップで最新を確認。</div></div>
+      <div class="snap-row"><div class="k">土砂災害</div><div class="v"><span class="pill warn">警戒</span>強い揺れで地盤が緩み、少しの雨でも土砂災害の危険。斜面・崖から離れる。</div></div>
+    </div>
+  </section>
+
+  <!-- 4. 交通 -->
+  <section id="s-kotsu">
+    <div class="sec-head"><span class="num">04</span><h2>交通・道路の影響</h2><span class="hint">18:00頃時点・確認中</span></div>
+    <div class="snap">
+      <div class="snap-row"><div class="k">九州新幹線</div><div class="v"><span class="pill alert">見合わせ</span>JR九州は九州新幹線・西九州新幹線・在来線の全線で運転見合わせ（16:40時点）。</div></div>
+      <div class="snap-row"><div class="k">山陽・東海道</div><div class="v"><span class="pill safe">再開</span>山陽新幹線は16:47運転再開。東海道・山陽で一部遅れ。</div></div>
+      <div class="snap-row"><div class="k">私鉄</div><div class="v">熊本電鉄は全線で運転見合わせ。</div></div>
+      <div class="snap-row"><div class="k">高速道路</div><div class="v"><span class="pill warn">点検・規制</span>九州道・南九州道等で緊急点検・通行止めの可能性。JARTIC/NEXCO西日本で確認。</div></div>
+      <div class="snap-row"><div class="k">空路</div><div class="v"><span class="pill warn">点検</span>熊本空港・長崎空港で滑走路点検、ANA便が出発できないなど影響。</div></div>
+    </div>
+    <div class="links" style="margin-top:12px">
+      <a class="lk primary" href="https://www.jartic.or.jp/" target="_blank" rel="noopener">
+        <div class="src">JARTIC｜道路の基準</div>
+        <div class="ti">日本道路交通情報センター</div>
+        <div class="ds">全国の通行止め・規制をリアルタイム集約。道路状況はここが基準。</div>
+        <span class="arrow">↗</span>
+      </a>
+      <a class="lk" href="https://www.qsr.mlit.go.jp/road/" target="_blank" rel="noopener">
+        <div class="src">国交省 九州地方整備局</div>
+        <div class="ti">道路情報</div>
+        <div class="ds">国道3号・57号・208号など直轄国道の規制。</div>
+        <span class="arrow">↗</span>
+      </a>
+      <a class="lk" href="https://www.w-nexco.co.jp/traffic/" target="_blank" rel="noopener">
+        <div class="src">NEXCO西日本</div>
+        <div class="ti">高速道路 交通情報</div>
+        <div class="ds">九州道・南九州道・九州横断道の通行止め・解除。</div>
+        <span class="arrow">↗</span>
+      </a>
+      <a class="lk" href="https://www.pref.kumamoto.jp/soshiki/163/" target="_blank" rel="noopener">
+        <div class="src">熊本県</div>
+        <div class="ti">県管理道路 通行規制</div>
+        <div class="ds">県道・市町村道の規制情報。</div>
+        <span class="arrow">↗</span>
+      </a>
+      <a class="lk" href="https://www.jorudan.co.jp/unkou/" target="_blank" rel="noopener">
+        <div class="src">JR九州ほか</div>
+        <div class="ti">鉄道運行情報</div>
+        <div class="ds">九州新幹線・在来線の運転見合わせ・再開。</div>
+        <span class="arrow">↗</span>
+      </a>
+      <a class="lk" href="https://typhoon.yahoo.co.jp/weather/jp/road/" target="_blank" rel="noopener">
+        <div class="src">Yahoo!</div>
+        <div class="ti">道路交通情報</div>
+        <div class="ds">高速の渋滞・通行止めを横断的に確認。</div>
+        <span class="arrow">↗</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- 4b. 通信障害 -->
+  <section id="s-tsushin">
+    <div class="sec-head"><span class="num">05</span><h2>通信障害（キャリア別）</h2><span class="hint">18:00頃時点</span></div>
+    <div class="snap">
+      <div class="snap-row"><div class="k">ドコモ</div><div class="v"><span class="pill warn">確認中</span>熊本県内のエリア状況を確認中。停電・伝送路の影響に注意。</div></div>
+      <div class="snap-row"><div class="k">au（KDDI）</div><div class="v"><span class="pill warn">確認中</span>被災エリアの通信状況を確認中。</div></div>
+      <div class="snap-row"><div class="k">ソフトバンク</div><div class="v"><span class="pill warn">確認中</span>被災エリアの通信状況を確認中。</div></div>
+      <div class="snap-row"><div class="k">楽天モバイル</div><div class="v"><span class="pill warn">確認中</span>被災エリアの通信状況を確認中。</div></div>
+      <div class="snap-row"><div class="k">格安SIM／MVNO</div><div class="v">大手回線を借用。借用元回線が被災すれば同様に影響。停電時は基地局のバッテリー切れにも注意。各MVNOの障害情報を確認。</div></div>
+      <div class="snap-row"><div class="k">安否確認</div><div class="v"><span class="pill warn">運用の可能性</span>震度7規模のため災害用伝言ダイヤル（171）・web171・各社伝言板の運用が見込まれる。安否は声より伝言板・SNS一斉連絡が有効。</div></div>
+      <div class="snap-row"><div class="k">公衆無線LAN</div><div class="v">通信支障が拡大すれば無料Wi-Fi「00000JAPAN」開放の可能性。開放時はセキュリティに留意し重要通信は避ける。</div></div>
+    </div>
+    <div class="links" style="margin-top:12px">
+      <a class="lk" href="https://www.docomo.ne.jp/info/network/" target="_blank" rel="noopener">
+        <div class="src">ドコモ</div><div class="ti">通信障害情報</div>
+        <div class="ds">エリアごとの障害・復旧状況。</div><span class="arrow">↗</span>
+      </a>
+      <a class="lk" href="https://www.au.com/mobile/trouble/" target="_blank" rel="noopener">
+        <div class="src">au（KDDI）</div><div class="ti">障害・メンテ情報</div>
+        <div class="ds">エリアの障害状況。</div><span class="arrow">↗</span>
+      </a>
+      <a class="lk" href="https://www.softbank.jp/mobile/info/personal/important/" target="_blank" rel="noopener">
+        <div class="src">ソフトバンク</div><div class="ti">重要なお知らせ</div>
+        <div class="ds">障害・災害関連の告知。</div><span class="arrow">↗</span>
+      </a>
+      <a class="lk" href="https://network.mobile.rakuten.co.jp/information/" target="_blank" rel="noopener">
+        <div class="src">楽天モバイル</div><div class="ti">障害情報</div>
+        <div class="ds">エリアの障害状況。</div><span class="arrow">↗</span>
+      </a>
+      <a class="lk primary" href="https://www.web171.jp/" target="_blank" rel="noopener">
+        <div class="src">NTT｜安否確認</div><div class="ti">web171 災害用伝言板</div>
+        <div class="ds">安否の登録・確認。電話は171。</div><span class="arrow">↗</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- 4c. DMAT派遣ルート -->
+  <section id="s-dmat">
+    <div class="sec-head"><span class="num">06</span><h2>DMAT派遣ルート（さいたま新都心 起点）</h2><span class="hint">医療チーム向け</span></div>
+    <div class="note" style="margin-top:0">
+      <b>前提：</b>DMATは原則として都道府県の派遣要請に基づき、指定された<b>参集拠点（活動拠点本部・SCU等）</b>へ参集します。個人判断での自家用車移動ではなく、所属DMAT指定医療機関・都道府県災害対策本部／DMAT事務局の指示に従ってください。下記は<b>参考ルート</b>であり、実派遣時は必ず正式な参集場所・移動手段の指示を確認してください。
+    </div>
+    <div class="snap" style="margin-top:12px">
+      <div class="snap-row"><div class="k">起点</div><div class="v">埼玉県さいたま市中央区新都心1-5（さいたま新都心エリア）</div></div>
+      <div class="snap-row"><div class="k">主目的地候補</div><div class="v">熊本県（宇城・八代・熊本市方面）の活動拠点本部／熊本赤十字病院・熊本大学病院など基幹災害拠点病院。正式な参集先は本部指示で確定。</div></div>
+      <div class="snap-row"><div class="k">移動手段</div><div class="v"><span class="pill alert">空路が現実的</span>陸路は約1,100km超・十数時間で非現実的。<b>航空搬送（自衛隊機・民間機）や新幹線</b>での参集が基本。羽田/成田→熊本空港、または広域SCU経由の指示に従う。</div></div>
+      <div class="snap-row"><div class="k">陸路（参考）</div><div class="v">自走の場合、新都心→首都高／東名／新東名→<b>名神・中国道・九州道</b>→熊本IC。九州道の点検・規制をJARTICで要確認。長距離のため交代要員・仮眠計画必須。</div></div>
+      <div class="snap-row"><div class="k">参集拠点</div><div class="v">DMAT事務局が<b>SCU（広域搬送拠点）</b>＝熊本空港等を指定する可能性。参集拠点本部・EMISの指示を最優先。</div></div>
+      <div class="snap-row"><div class="k">通行確保</div><div class="v">災害時は<b>緊急交通路</b>指定・一般車両規制の可能性。緊急通行車両確認標章、燃料計画は本部確認。</div></div>
+    </div>
+    <div class="links" style="margin-top:12px">
+      <a class="lk primary" href="https://www.dmat.jp/" target="_blank" rel="noopener">
+        <div class="src">DMAT事務局｜最優先</div><div class="ti">日本DMAT</div>
+        <div class="ds">派遣要請・活動方針の公式情報。指示はここと所属機関から。</div><span class="arrow">↗</span>
+      </a>
+      <a class="lk" href="https://www.wds.emis.go.jp/" target="_blank" rel="noopener">
+        <div class="src">厚労省</div><div class="ti">EMIS 広域災害救急医療情報</div>
+        <div class="ds">医療機関の被災・受入状況、DMAT参集情報。</div><span class="arrow">↗</span>
+      </a>
+      <a class="lk" href="https://www.pref.kumamoto.jp/soshiki/45/" target="_blank" rel="noopener">
+        <div class="src">熊本県</div><div class="ti">医療・災害対策</div>
+        <div class="ds">県の災害医療体制・受援情報。</div><span class="arrow">↗</span>
+      </a>
+      <a class="lk" href="https://www.jartic.or.jp/" target="_blank" rel="noopener">
+        <div class="src">JARTIC</div><div class="ti">道路交通情報（ルート確認）</div>
+        <div class="ds">九州道の通行可否をリアルタイムで。</div><span class="arrow">↗</span>
+      </a>
+      <a class="lk" href="https://www.google.com/maps/dir/さいたま新都心/熊本市" target="_blank" rel="noopener">
+        <div class="src">地図</div><div class="ti">Googleマップ 経路</div>
+        <div class="ds">新都心→熊本の空路/陸路の所要を確認。</div><span class="arrow">↗</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- 7. 津波・余震 -->
+  <section id="s-taifu">
+    <div class="sec-head"><span class="num">07</span><h2>津波・余震情報</h2><span class="hint">18:00頃時点・要最新確認</span></div>
+    <div class="note" style="margin-top:0;background:#f7e8e3;border-color:#e0b3a6;border-left-color:var(--alert)">
+      <b style="color:var(--alert-deep)">津波注意報 発表中：</b>気象庁は有明海・八代海に津波注意報を発表。沿岸・河口部では海面変動により海水が押し寄せる・引く動きが繰り返されます。海岸や河川に近づかず、注意報解除まで警戒を続けてください。DMAT沿岸活動時も避難経路と高台を必ず確認。
+    </div>
+    <div class="snap" style="margin-top:12px">
+      <div class="snap-row"><div class="k">津波注意報</div><div class="v"><span class="pill alert">継続中</span>有明海・八代海に加え長崎・島原港にも注意報。予想は高くないが海中・海岸・河口は危険。解除まで警戒。</div></div>
+      <div class="snap-row"><div class="k">余震活動</div><div class="v"><span class="pill alert">活発</span>本震(16:27,M7.1,震度7)後、16:29/16:30に震度5弱、天草・芦北でも地震が続発。</div></div>
+      <div class="snap-row"><div class="k">気象庁会見</div><div class="v"><span class="pill alert">重要</span>「1週間程度、特に今後2〜3日は強い揺れをもたらす地震が発生することが多い」と警戒を要請。2016年は震度7が立て続けに発生した例に言及。</div></div>
+      <div class="snap-row"><div class="k">建物の注意</div><div class="v">本震で損傷した建物は余震で倒壊の危険。応急危険度判定前の被災建物内での活動は慎重に。</div></div>
+    </div>
+    <div class="links" style="margin-top:12px">
+      <a class="lk primary" href="https://www.jma.go.jp/bosai/map.html#contents=tsunami" target="_blank" rel="noopener">
+        <div class="src">気象庁｜津波・最優先</div><div class="ti">津波情報</div>
+        <div class="ds">発表中の津波注意報・予想到達時刻・高さ。</div><span class="arrow">↗</span>
+      </a>
+      <a class="lk primary" href="https://www.jma.go.jp/bosai/map.html#contents=earthquake" target="_blank" rel="noopener">
+        <div class="src">気象庁</div><div class="ti">地震情報（余震）</div>
+        <div class="ds">続発する地震の震源・震度をリアルタイムで。</div><span class="arrow">↗</span>
+      </a>
+      <a class="lk" href="https://www.jma.go.jp/bosai/forecast/" target="_blank" rel="noopener">
+        <div class="src">気象庁</div><div class="ti">天気予報・警報注意報</div>
+        <div class="ds">熊本県を選び、地域の警報・注意報を確認。</div><span class="arrow">↗</span>
+      </a>
+      <a class="lk" href="https://typhoon.yahoo.co.jp/weather/jp/tsunami/" target="_blank" rel="noopener">
+        <div class="src">Yahoo!</div><div class="ti">津波情報・避難場所</div>
+        <div class="ds">地図で津波予報区・避難場所を確認。</div><span class="arrow">↗</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- 8. 大雨・洪水（基準変更） -->
+  <section id="s-oame">
+    <div class="sec-head"><span class="num">08</span><h2>大雨・洪水・キキクル</h2><span class="hint">2026年5月下旬〜 新基準</span></div>
+    <div class="note" style="margin-top:0;background:#f7e8e3;border-color:#e0b3a6;border-left-color:var(--alert)">
+      <b style="color:var(--alert-deep)">⚠ 防災気象情報の体系が変わりました（医療従事者は要把握）：</b>気象業務法・水防法の改正で、2026年5月下旬から警報名に警戒レベルの数字が付く方式に変更。例「大雨警報→<b>レベル3大雨警報</b>」「土砂災害警戒情報→<b>レベル4土砂災害危険警報</b>」。<b>洪水注意報・洪水警報は廃止</b>され、中小河川の氾濫は「大雨に関する情報」に統合されました（1級河川など大河川の指定河川洪水予報は継続）。
+    </div>
+    <div class="snap" style="margin-top:12px">
+      <div class="snap-row"><div class="k">レベル5</div><div class="v"><span class="pill alert">災害切迫</span>大雨特別警報など。すでに災害発生または切迫。レベル4までに全員避難。</div></div>
+      <div class="snap-row"><div class="k">レベル4</div><div class="v"><span class="pill alert">危険</span>大雨危険警報／土砂災害危険警報など。自治体の避難指示の目安。危険な場所から全員避難。</div></div>
+      <div class="snap-row"><div class="k">レベル3</div><div class="v"><span class="pill warn">警戒</span>大雨警報など。高齢者等避難の目安。要配慮者は避難開始。</div></div>
+      <div class="snap-row"><div class="k">キキクル更新</div><div class="v">洪水＋浸水を重ねた「大雨キキクル」が新設。土砂キキクルは判定変更で<b>「黄」から急に「紫」へ飛ぶ</b>ことが増加。段階的変化を期待せず早めの判断を。</div></div>
+      <div class="snap-row"><div class="k">線状降水帯</div><div class="v">前3時間積算100mm以上が500km²以上・線状（長短比2.5以上）・最大150mm以上等で発生情報。半日前予測の呼びかけも活用。</div></div>
+    </div>
+    <div class="links" style="margin-top:12px">
+      <a class="lk primary" href="https://www.jma.go.jp/bosai/risk/" target="_blank" rel="noopener">
+        <div class="src">気象庁｜最優先</div><div class="ti">キキクル（危険度分布）</div>
+        <div class="ds">大雨・洪水・土砂・浸水の危険度を地図で。10分毎更新。</div><span class="arrow">↗</span>
+      </a>
+      <a class="lk" href="https://www.jma.go.jp/bosai/#pattern=warning" target="_blank" rel="noopener">
+        <div class="src">気象庁</div><div class="ti">警報・注意報</div>
+        <div class="ds">熊本県の発表中レベル別情報。</div><span class="arrow">↗</span>
+      </a>
+      <a class="lk" href="https://www.river.go.jp/" target="_blank" rel="noopener">
+        <div class="src">国交省</div><div class="ti">川の防災情報</div>
+        <div class="ds">河川水位・氾濫危険情報・ライブカメラ。</div><span class="arrow">↗</span>
+      </a>
+      <a class="lk" href="https://www.jma.go.jp/jma/kishou/know/bosai/keiho-update2026/index.html" target="_blank" rel="noopener">
+        <div class="src">気象庁</div><div class="ti">新しい防災気象情報の解説</div>
+        <div class="ds">2026年改正の詳細。基準を正確に把握。</div><span class="arrow">↗</span>
+      </a>
+      <a class="lk" href="https://www.pref.kumamoto.jp/" target="_blank" rel="noopener">
+        <div class="src">熊本県</div><div class="ti">避難情報・避難所</div>
+        <div class="ds">市町村の避難指示・開設避難所。</div><span class="arrow">↗</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- 9. 震度 -->
+  <section id="s-shindo">
+    <div class="sec-head"><span class="num">09</span><h2>主な震度</h2></div>
+    <div class="snap">
+      <div class="snap-row"><div class="k">震度7</div><div class="v"><span class="pill alert">熊本</span>宇城市・氷川町</div></div>
+      <div class="snap-row"><div class="k">震度6強</div><div class="v"><span class="pill alert">熊本</span>熊本南区・八代市・宇土市・美里町・益城町</div></div>
+      <div class="snap-row"><div class="k">震度6弱</div><div class="v">合志市・大津町・西原村・御船町・上天草市・芦北町・天草地域ほか</div></div>
+      <div class="snap-row"><div class="k">震度5強</div><div class="v">熊本市中央/東/西/北区・山鹿市・菊池市・菊陽町・水俣市・天草市（熊本）／南島原市（長崎）／薩摩川内市・さつま町・長島町（鹿児島）</div></div>
+      <div class="snap-row"><div class="k">震度5弱</div><div class="v">玉名市・阿蘇市・南阿蘇村・人吉市ほか（熊本）／柳川市・大川市（福岡）／神埼市・白石町（佐賀）／雲仙市・諫早市（長崎）／延岡市ほか（宮崎）／阿久根市ほか（鹿児島）</div></div>
+      <div class="snap-row"><div class="k">余震</div><div class="v"><span class="pill alert">活発</span>本震後も震度5弱(M6.1)等が続発。気象庁は今後約1週間、特に2〜3日は最大震度7クラスの地震に注意を呼びかけ。損傷建物の倒壊・土砂災害に警戒。</div></div>
+    </div>
+  </section>
+
+  <div class="disclaimer">
+    <b>このダッシュボードについて</b><br>
+    データ欄は<b>2026年7月28日18:00頃のスナップショット</b>です。地震情報は刻々と変わるため、数値や状況は必ず上部「01 一次情報」のリンク（特に気象庁）で最新を確認してください。
+    <div class="how">
+      <b>自動更新の限界と運用：</b>このページ単体は外部サーバーに自動接続して数値を書き換えることはできません（アーティファクトの仕様上、私が能動的にバックグラウンド更新することも不可）。リンクは常に最新の公式ページへ飛びます。データ欄を書き換えたい時は、私に「熊本の地震を更新して」と伝えてください。気象庁を基準にNHK・自治体を再検索し、ファクトチェックした最新版に差し替えます。地震時のハルシネーションを避けるため、未確認情報は載せません。
+    </div>
+  </div>
+
+  <footer>気象庁・NHK・自治体公式発表に基づく ／ 最終データ反映：2026/7/28 18:00頃</footer>
+</main>
+
+<script>
+  // 目次タップ：ページ遷移せず同一ページ内スクロール（サンドボックスの外部リンク警告を回避）
+  (function(){
+    function go(id){
+      var el=document.getElementById(id);
+      if(el) el.scrollIntoView({behavior:'smooth',block:'start'});
+    }
+    document.querySelectorAll('.toc a[data-target]').forEach(function(a){
+      a.addEventListener('click',function(e){e.preventDefault();go(a.dataset.target);});
+      a.addEventListener('keydown',function(e){
+        if(e.key==='Enter'||e.key===' '){e.preventDefault();go(a.dataset.target);}
+      });
+    });
+  })();
+
+  // 「開いた時刻」だけは端末側でリアルタイム表示（数値ねつ造を避けるため事実データには触れない）
+  (function(){
+    const d=new Date();
+    const p=n=>String(n).padStart(2,'0');
+    const days=['日','月','火','水','木','金','土'];
+    document.getElementById('openTime').textContent =
+      `${d.getMonth()+1}/${d.getDate()}(${days[d.getDay()]}) ${p(d.getHours())}:${p(d.getMinutes())}`;
+  })();
+</script>
+</body>
+</html>
