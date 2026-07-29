@@ -122,6 +122,10 @@ window.DMAT_RESOURCES=[{"title": "医療搬送カルテ（災害時診療情報�
   .pill.alert{background:#f7e1dc;color:var(--alert-deep)}
   .pill.info{background:#e3edf6;color:var(--info)}
   .pill.mute{background:#eceff2;color:var(--muted)}
+  th.sortable{cursor:pointer;user-select:none;white-space:nowrap}
+  th.sortable:hover{color:#fff;text-decoration:underline}
+  th.sortable.sorted{color:#fff}
+  .sarrow{font-size:11px;opacity:.9}
 
   .savehint{font-size:11.5px;color:var(--amber);font-weight:700}
 
@@ -742,8 +746,8 @@ renderers.hosp=function(){
       </div>
       <div class="count" id="hCount" style="margin-bottom:8px"></div>
       <div class="tablewrap"><table><thead><tr>
-        <th style="width:80px">状況</th><th style="width:60px">震度</th><th>名称</th><th style="width:90px">市区町村</th><th style="width:120px">病院評価群</th><th style="width:120px">大方針</th>
-        <th style="width:120px">被害</th><th style="width:130px">ライフライン</th><th style="width:70px">転送要</th><th style="width:44px"></th>
+        <th style="width:80px">状況</th><th style="width:60px">震度</th><th>名称</th><th style="width:90px">市区町村</th><th style="width:120px" class="sortable" data-sort="group">病院評価群<span class="sarrow"></span></th><th style="width:120px" class="sortable" data-sort="policy">大方針<span class="sarrow"></span></th>
+        <th style="width:120px" class="sortable" data-sort="danger">被害<span class="sarrow"></span></th><th style="width:130px" class="sortable" data-sort="life">ライフライン<span class="sarrow"></span></th><th style="width:70px">転送要</th><th style="width:44px"></th>
       </tr></thead><tbody id="hBody"></tbody></table><div class="empty" id="hEmpty">該当する医療機関がありません。</div></div>`;
     p.dataset.built=1;
     $('#hQ').addEventListener('input',e=>{hospFilter.q=e.target.value;renderHospBody()});
@@ -751,6 +755,7 @@ renderers.hosp=function(){
     $('#hNeed').addEventListener('change',e=>{hospFilter.need=e.target.value;renderHospBody()});
     $('#hShindo').addEventListener('change',e=>{hospFilter.shindo=e.target.value;renderHospBody()});
     $('#hReset').onclick=()=>{hospFilter={q:'',city:'',need:'',shindo:''};$('#hQ').value='';$('#hCity').value='';$('#hNeed').value='';$('#hShindo').value='';renderHospBody()};
+    p.querySelectorAll('th[data-sort]').forEach(th=>{th.addEventListener('click',()=>{const k=th.dataset.sort;if(hospSort.key===k){hospSort.dir*=-1;}else{hospSort.key=k;hospSort.dir=-1;}updateHospSort(p);renderHospBody();});});
     $('#hMap').onclick=()=>switchTab('map');
   }
   renderHospBody();
@@ -765,6 +770,35 @@ function filterHosp(){
   });
 }
 /* 病院評価群・大方針 の色付きバッジ（安全側：未定義値は中立表示） */
+/* ===== 医療機関一覧のソート ===== */
+let hospSort={key:'',dir:-1}; // key='' は既定(要支援→震度7), dir:1=昇順 -1=降順
+function groupRank(v){v=(v==null?'':String(v)).trim();
+  if(v==='機能障害なし'||v==='Ⅰ')return 1;
+  if(v==='機能障害あり'||v==='Ⅱ')return 2;
+  if(v==='生命機能維持不可'||v==='場の安全確保不可'||v==='Ⅲ')return 3;
+  return 0;}
+function policyRank(v){v=(v==null?'':String(v)).trim();
+  if(!v)return 0;
+  if(v.indexOf('全避難')>=0)return 3;
+  if(v.indexOf('籠城')>=0)return 2;
+  if(v.indexOf('通常運用')>=0||v.indexOf('病床拡張')>=0)return 1;
+  return 0;}
+function hospSortVal(h,key){
+  switch(key){
+    case 'group':  return groupRank(h.group);
+    case 'policy': return policyRank(h.policy);
+    case 'danger': return dangerList(h).length;
+    case 'life':   return lifeList(h).length;
+  }
+  return 0;
+}
+function updateHospSort(p){
+  (p||document).querySelectorAll('th[data-sort]').forEach(th=>{
+    const a=th.querySelector('.sarrow');if(!a)return;
+    a.textContent=(th.dataset.sort===hospSort.key)?(hospSort.dir<0?' ▼':' ▲'):'';
+    th.classList.toggle('sorted',th.dataset.sort===hospSort.key);
+  });
+}
 function groupBadge(v){
   v=(v==null?'':String(v)).trim();
   if(!v)return '<span style="color:var(--muted)">—</span>';
@@ -786,8 +820,12 @@ function policyBadge(v){
 function renderHospBody(){
   const body=$('#hBody');if(!body)return;body.innerHTML='';
   const list=filterHosp();
-  // 要支援を上に、震度7を優先
-  list.sort((a,b)=>(hIsNeed(b)-hIsNeed(a))||(hShindo7(b)-hShindo7(a)));
+  // 列ソート指定があればそれを優先。無ければ既定(要支援→震度7)
+  const _d=hospSort.dir;
+  list.sort((a,b)=>{
+    if(hospSort.key){const va=hospSortVal(a,hospSort.key),vb=hospSortVal(b,hospSort.key);if(va!==vb)return (va-vb)*_d;}
+    return (hIsNeed(b)-hIsNeed(a))||(hShindo7(b)-hShindo7(a));
+  });
   list.slice(0,300).forEach(h=>{
     const tr=el('tr',{onclick:()=>showHospital(h)});tr.style.cursor='pointer';
     const dl=dangerList(h),ll=lifeList(h),tn=hTransNeed(h);

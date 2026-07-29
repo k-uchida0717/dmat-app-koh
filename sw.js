@@ -1,7 +1,7 @@
 /* DMAT支援プラットフォーム Service Worker
    オフライン動作のためのキャッシュ制御。
    バージョンを上げると古いキャッシュを破棄して更新します。 */
-const CACHE_VERSION = 'dmat-v2';
+const CACHE_VERSION = 'dmat-v3';
 const CORE_CACHE = CACHE_VERSION + '-core';
 const RUNTIME_CACHE = CACHE_VERSION + '-runtime';
 
