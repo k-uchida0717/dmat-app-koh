@@ -1230,34 +1230,7 @@ function exportAnalysisPdf(){
     <style>body{font-family:'Yu Gothic','Hiragino Sans',sans-serif;padding:22px;color:#111}h1{font-size:17px;border-bottom:2px solid #0b6b5e;padding-bottom:6px}table{width:100%;border-collapse:collapse;margin-top:10px}th,td{border:1px solid #999;padding:6px 9px;font-size:12px;text-align:left;vertical-align:top}th{background:#eef5f3;width:210px}@media print{@page{margin:12mm}tr{break-inside:avoid}}</style>
     </head><body><h1>${esc(title)}</h1><p style="font-size:11px;color:#666">日時：${esc(analysis.date||'')}　／　記入：${esc(analysis.recorder||'')}　／　出力：${new Date().toLocaleString('ja-JP')}</p>
     <table>${rowsHtml}</table>
-    <${'script'}>window.onload=function(){setTimeout(function(){window.print()},350)}<\/script><script>
-if('serviceWorker' in navigator){
-  window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('sw.js').then(reg=>{
-      reg.addEventListener('updatefound',()=>{
-        const nw=reg.installing;
-        nw && nw.addEventListener('statechange',()=>{
-          if(nw.state==='installed' && navigator.serviceWorker.controller){showToast('新しいバージョンがあります。再読み込みで更新されます。',true);}
-        });
-      });
-    }).catch(e=>console.warn('SW登録失敗',e));
-  });
-}
-let deferredPrompt=null;
-window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;showInstallBtn(true);});
-window.addEventListener('appinstalled',()=>{showInstallBtn(false);showToast('ホーム画面にインストールしました。',false);});
-function showInstallBtn(show){
-  let b=document.getElementById('pwaInstallBtn');
-  if(show && !b){b=document.createElement('button');b.id='pwaInstallBtn';b.textContent='⬇ アプリをインストール';b.style.cssText='position:fixed;right:16px;bottom:16px;z-index:1000;background:#0b6b5e;color:#fff;border:none;padding:12px 18px;border-radius:10px;font-weight:700;font-family:inherit;font-size:14px;box-shadow:0 10px 30px -8px rgba(0,0,0,.5);cursor:pointer';b.onclick=async()=>{if(!deferredPrompt)return;deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;showInstallBtn(false);};document.body.appendChild(b);}
-  else if(!show && b){b.remove();}
-}
-function showToast(msg,persistent){
-  const t=document.createElement('div');t.textContent=msg;t.style.cssText='position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:1001;background:#20303a;color:#fff;padding:11px 18px;border-radius:9px;font-size:13px;font-weight:700;box-shadow:0 10px 30px -8px rgba(0,0,0,.5);max-width:90%';
-  if(persistent){const r=document.createElement('button');r.textContent='再読込';r.style.cssText='margin-left:12px;background:#0b6b5e;border:none;color:#fff;padding:4px 10px;border-radius:6px;font-weight:700;cursor:pointer';r.onclick=()=>location.reload();t.appendChild(r);}
-  document.body.appendChild(t);if(!persistent)setTimeout(()=>t.remove(),4000);
-}
-</script>
-</body></html>`);
+    <${'script'}>window.onload=function(){setTimeout(function(){window.print()},350)}<\/script></body></html>`);
   w.document.close();
 }
 
@@ -1493,6 +1466,33 @@ if(window.__noSample){
   console.warn('サンプルデータ未読込');
 }
 
+</script>
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load',function(){
+    navigator.serviceWorker.register('sw.js').then(function(reg){
+      reg.addEventListener('updatefound',function(){
+        var nw=reg.installing;
+        nw && nw.addEventListener('statechange',function(){
+          if(nw.state==='installed' && navigator.serviceWorker.controller){showToast('新しいバージョンがあります。再読み込みで更新されます。',true);}
+        });
+      });
+    }).catch(function(e){console.warn('SW登録失敗',e);});
+  });
+}
+var deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();deferredPrompt=e;showInstallBtn(true);});
+window.addEventListener('appinstalled',function(){showInstallBtn(false);showToast('ホーム画面にインストールしました。',false);});
+function showInstallBtn(show){
+  var b=document.getElementById('pwaInstallBtn');
+  if(show && !b){b=document.createElement('button');b.id='pwaInstallBtn';b.textContent='\u2b07 アプリをインストール';b.style.cssText='position:fixed;right:16px;bottom:16px;z-index:1000;background:#0b6b5e;color:#fff;border:none;padding:12px 18px;border-radius:10px;font-weight:700;font-family:inherit;font-size:14px;box-shadow:0 10px 30px -8px rgba(0,0,0,.5);cursor:pointer';b.onclick=function(){if(!deferredPrompt)return;deferredPrompt.prompt();deferredPrompt.userChoice.then(function(){deferredPrompt=null;showInstallBtn(false);});};document.body.appendChild(b);}
+  else if(!show && b){b.remove();}
+}
+function showToast(msg,persistent){
+  var t=document.createElement('div');t.textContent=msg;t.style.cssText='position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:1001;background:#20303a;color:#fff;padding:11px 18px;border-radius:9px;font-size:13px;font-weight:700;box-shadow:0 10px 30px -8px rgba(0,0,0,.5);max-width:90%';
+  if(persistent){var r=document.createElement('button');r.textContent='再読込';r.style.cssText='margin-left:12px;background:#0b6b5e;border:none;color:#fff;padding:4px 10px;border-radius:6px;font-weight:700;cursor:pointer';r.onclick=function(){location.reload();};t.appendChild(r);}
+  document.body.appendChild(t);if(!persistent)setTimeout(function(){t.remove();},4000);
+}
 </script>
 </body>
 </html>
