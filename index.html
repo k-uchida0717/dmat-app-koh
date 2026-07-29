@@ -216,7 +216,6 @@ window.DMAT_RESOURCES=[{"title": "医療搬送カルテ（災害時診療情報�
 <body>
 <header>
   <div class="htop">
-    <a class="back" href="javascript:history.back()">← 戻る</a>
     <h1>🚑 DMAT 災害医療支援プラットフォーム <span class="badge">統合版</span></h1>
     <span class="clock mono" id="clock">—</span>
   </div>
@@ -743,7 +742,7 @@ renderers.hosp=function(){
       </div>
       <div class="count" id="hCount" style="margin-bottom:8px"></div>
       <div class="tablewrap"><table><thead><tr>
-        <th style="width:80px">状況</th><th style="width:60px">震度</th><th>名称</th><th style="width:90px">市区町村</th>
+        <th style="width:80px">状況</th><th style="width:60px">震度</th><th>名称</th><th style="width:90px">市区町村</th><th style="width:120px">病院評価群</th><th style="width:120px">大方針</th>
         <th style="width:120px">被害</th><th style="width:130px">ライフライン</th><th style="width:70px">転送要</th><th style="width:44px"></th>
       </tr></thead><tbody id="hBody"></tbody></table><div class="empty" id="hEmpty">該当する医療機関がありません。</div></div>`;
     p.dataset.built=1;
@@ -765,6 +764,25 @@ function filterHosp(){
     return true;
   });
 }
+/* 病院評価群・大方針 の色付きバッジ（安全側：未定義値は中立表示） */
+function groupBadge(v){
+  v=(v==null?'':String(v)).trim();
+  if(!v)return '<span style="color:var(--muted)">—</span>';
+  var cls='mute';
+  if(v==='機能障害なし')cls='safe';
+  else if(v==='機能障害あり')cls='warn';
+  else if(v==='生命機能維持不可'||v==='場の安全確保不可')cls='alert';
+  return '<span class="pill '+cls+'">'+esc(v)+'</span>';
+}
+function policyBadge(v){
+  v=(v==null?'':String(v)).trim();
+  if(!v)return '<span style="color:var(--muted)">—</span>';
+  var cls='mute';
+  if(v.indexOf('通常運用')>=0||v.indexOf('病床拡張')>=0)cls='safe';
+  else if(v.indexOf('籠城')>=0)cls='warn';
+  else if(v.indexOf('全避難')>=0)cls='alert';
+  return '<span class="pill '+cls+'">'+esc(v)+'</span>';
+}
 function renderHospBody(){
   const body=$('#hBody');if(!body)return;body.innerHTML='';
   const list=filterHosp();
@@ -777,6 +795,8 @@ function renderHospBody(){
       <td>${h.shindo?`<span class="pill ${hShindo7(h)?'alert':'mute'}">${esc(h.shindo.replace('震度',''))}</span>`:'—'}</td>
       <td><div style="font-weight:700">${esc(h.name)}</div><div style="font-size:11px;color:var(--muted)">${esc(h.addr)}</div></td>
       <td>${esc(h.city)}</td>
+      <td>${groupBadge(h.group)}</td>
+      <td>${policyBadge(h.policy)}</td>
       <td>${dl.length?`<span class="pill alert">${dl.join('/')}</span>`:'<span style="color:var(--muted)">—</span>'}</td>
       <td>${ll.length?`<span class="pill warn">${ll.join('/')}</span>`:'<span style="color:var(--muted)">—</span>'}</td>
       <td class="center">${tn?`<b style="color:var(--alert)">${tn}</b>`:'—'}</td>
