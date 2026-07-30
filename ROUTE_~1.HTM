@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>熊本地震 DMAT参集ルート説明資料（さいたま新都心発）</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap');
+  :root{
+    --ink:#15191f; --paper:#f6f4ef; --panel:#ffffff; --line:#dcd7cd;
+    --alert:#c8442f; --alert-deep:#8f2c1d; --amber:#d98a17; --safe:#3f7d4e;
+    --info:#2f5d86; --muted:#6b6459; --teal:#0b6b5e;
+    --shadow:0 1px 0 rgba(0,0,0,.04), 0 8px 24px -16px rgba(0,0,0,.25);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Zen Kaku Gothic New',system-ui,sans-serif;background:var(--paper);color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased;padding:0 0 60px}
+  .mono{font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums}
+  header{background:var(--ink);color:#f6f4ef;padding:22px clamp(16px,4vw,40px) 26px;position:relative;overflow:hidden}
+  header::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent,transparent 14px,rgba(200,68,47,.08) 14px,rgba(200,68,47,.08) 16px);pointer-events:none}
+  .tag{display:inline-flex;align-items:center;gap:7px;background:var(--alert);color:#fff;font-size:12px;font-weight:700;letter-spacing:.08em;padding:5px 11px;border-radius:2px;margin-bottom:12px;position:relative}
+  h1{font-size:clamp(20px,4vw,30px);font-weight:900;letter-spacing:-.01em;position:relative}
+  .sub{color:#c3bdb1;font-size:13.5px;margin-top:7px;position:relative}
+  .meta-line{margin-top:12px;font-size:12px;color:#d9d3c7;position:relative;display:flex;flex-wrap:wrap;gap:5px 16px}
+  .meta-line b{color:#fff}
+  main{max-width:1040px;margin:0 auto;padding:0 clamp(16px,4vw,40px)}
+  section{margin-top:32px}
+  .sec-head{display:flex;align-items:baseline;gap:12px;margin-bottom:14px;border-bottom:2px solid var(--ink);padding-bottom:8px}
+  .sec-head .num{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:var(--alert)}
+  .sec-head h2{font-size:18px;font-weight:800}
+  .sec-head .hint{margin-left:auto;font-size:11.5px;color:var(--muted)}
+  .callout{background:#11151b;color:#eceff2;border-radius:12px;padding:18px 20px;margin-top:14px;box-shadow:var(--shadow)}
+  .callout h3{color:#fff;font-size:15px;margin-bottom:10px}
+  .callout .k{color:#ffd7cf;font-weight:700}
+  .callout ul{margin:6px 0 0 18px}
+  .callout li{margin:5px 0;font-size:13.5px}
+  .note{background:#fbf4e6;border:1px solid #ecd9ab;border-left:4px solid var(--amber);border-radius:6px;padding:13px 15px;font-size:13px;color:#6a5320;margin-top:14px}
+  .note b{color:#4f3c11}
+  .note.red{background:#f7e8e3;border-color:#e0b3a6;border-left-color:var(--alert)}
+  .note.red b{color:var(--alert-deep)}
+  .note.teal{background:#e7f2ef;border-color:#a9d4cb;border-left-color:var(--teal)}
+  .note.teal b{color:#08544a}
+  table{width:100%;border-collapse:collapse;margin-top:12px;background:var(--panel);border:1px solid var(--line);border-radius:8px;overflow:hidden;font-size:13px}
+  th,td{padding:9px 11px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+  th{background:#faf8f3;font-weight:700;color:var(--muted);font-size:12px;letter-spacing:.02em}
+  tr:last-child td{border-bottom:none}
+  .pill{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;white-space:nowrap}
+  .pill.ok{background:#e6f0e8;color:var(--safe)}
+  .pill.ng{background:#f7e1dc;color:var(--alert-deep)}
+  .pill.dmat{background:#fbf0db;color:#9a5a1c}
+  .pill.info{background:#e3edf6;color:var(--info)}
+  .fig{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;margin-top:14px;box-shadow:var(--shadow);overflow-x:auto}
+  .fig .cap{font-size:11.5px;color:var(--muted);margin-top:8px}
+  .legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:11.5px;color:var(--muted);margin-top:6px;align-items:center}
+  .legend i{display:inline-block;width:22px;height:8px;border-radius:2px;margin-right:5px;vertical-align:middle}
+  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-top:14px}
+  .dcard{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;box-shadow:var(--shadow);border-top:4px solid var(--teal)}
+  .dcard.d1{border-top-color:var(--alert)} .dcard.d2{border-top-color:var(--amber)} .dcard.d3{border-top-color:var(--info)} .dcard.d4{border-top-color:var(--safe)}
+  .dcard .no{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:12px;color:var(--muted)}
+  .dcard h3{font-size:16px;margin:2px 0 3px}
+  .dcard .role{font-size:12px;font-weight:700;color:var(--teal);margin-bottom:8px}
+  .dcard .row{font-size:12.5px;margin:4px 0;display:flex;gap:8px}
+  .dcard .row .lb{color:var(--muted);min-width:52px;font-weight:700}
+  .dcard .btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:11px}
+  .btn{display:inline-block;font-size:12px;font-weight:700;text-decoration:none;padding:6px 11px;border-radius:7px;border:1px solid var(--line);color:var(--ink);background:#fff}
+  .btn.primary{background:var(--teal);color:#fff;border-color:var(--teal)}
+  .chk{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:6px 4px;margin-top:12px;box-shadow:var(--shadow)}
+  .chk h3{font-size:14.5px;padding:11px 14px 4px;color:var(--alert-deep)}
+  .chk ul{list-style:none;margin:0;padding:2px 14px 12px}
+  .chk li{font-size:12.8px;padding:4px 0 4px 24px;position:relative;border-bottom:1px dashed #ece7dd}
+  .chk li:last-child{border-bottom:none}
+  .chk li::before{content:"\2610";position:absolute;left:2px;top:3px;color:var(--teal);font-weight:700}
+  .chk li b{color:var(--ink)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .disclaimer{margin-top:36px;padding:16px 18px;background:#1d2229;color:#cfc9bd;border-radius:8px;font-size:12px;line-height:1.7}
+  .disclaimer b{color:#fff}
+  footer{text-align:center;color:var(--muted);font-size:11.5px;margin-top:22px}
+  a{color:var(--teal)}
+  @media(max-width:640px){.grid2{grid-template-columns:1fr}}
+  @media print{
+    body{background:#fff;padding:0}
+    header,.callout,.disclaimer{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    section{break-inside:avoid}
+    .dcard,.fig,.chk,table{break-inside:avoid}
+    .btn{border:1px solid #bbb}
+  }
+</style>
+</head>
+<body>
+<header>
+  <span class="tag">DMAT 業務調整員向け ／ 参集ルート説明資料</span>
+  <h1>熊本地震 参集ルート説明資料<br>― さいたま新都心 → 熊本県 ―</h1>
+  <div class="sub">2026年7月28日 16:27頃発生／熊本県熊本地方・M7.1・最大震度7（宇城市・氷川町）／有明海・八代海に津波注意報・活発な余震</div>
+  <div class="meta-line">
+    <span>資料作成時点：<b>2026/7/30 昼</b></span>
+    <span>通行可否の基準：<b>DMAT事務局 通知（7/30 11:10）</b></span>
+    <span>最新確認：<b>JARTIC・DMAT事務局・EMIS</b></span>
+  </div>
+</header>
+
+<main>
+
+  <section id="s-summary">
+    <div class="sec-head"><span class="num">00</span><h2>はじめに（隊員説明用サマリ）</h2><span class="hint">まずここだけ共有</span></div>
+    <div class="callout">
+      <h3>🚩 参集の大原則と、いま押さえるべき3点</h3>
+      <ul>
+        <li><span class="k">① 参集先・移動手段は「本部指示」が最優先。</span>本資料は<b>参考ルート</b>です。実際の参集拠点・手段は、所属DMAT指定医療機関／都道府県災害対策本部／DMAT事務局・EMISの指示で確定します。個人判断の自走参集はしません。</li>
+        <li><span class="k">② DMAT車両の要件（通行止め区間の走行条件）。</span>点検中の通行止め区間は原則走行禁止。DMAT車両として走行が認められた区間は、<b>車両にDMATの掲示 ＋ DMAT隊員証の携行</b>が条件です（事務局通知）。</li>
+        <li><span class="k">③ いまの九州道（7/30 11:10時点）。</span><b>益城熊本空港IC〜松橋IC＝一般通行可（解除）</b>／<b>松橋IC〜えびのIC＝通行止め継続</b>（うち<b>坂本PA〜えびのIC＝DMAT車両のみ可</b>）／<b>九州中央道 嘉島JCT〜益城料金所＝解除</b>。八代IC・八代周辺は本線がまだ通行止めです。</li>
+      </ul>
+    </div>
+    <div class="note red"><b>安全前提：</b>余震活発（気象庁は今後1週間、特に2〜3日は最大震度7クラスに注意）。津波注意報継続中は沿岸・河口（八代方面）で高台・避難経路を確認。強い揺れで地盤が緩み、少しの雨で土砂災害の危険。損傷建物は余震で倒壊の恐れ。</div>
+  </section>
+
+  <section id="s-road">
+    <div class="sec-head"><span class="num">01</span><h2>高速道路 通行止めの時系列と現況</h2><span class="hint">添付・DMAT事務局通知より</span></div>
+    <table>
+      <thead><tr><th style="width:120px">通知時刻</th><th>内容（要約）</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">7/28 20:22</td><td>通行止め区間は点検中のため走行禁止。<b>栗野〜えびの</b>は点検終了で通行可。車両にDMAT掲示＋隊員証携行。</td></tr>
+        <tr><td class="mono">7/29 01:00</td><td>一部解除：<b>植木IC〜益城熊本空港IC</b>が点検終了で通行可に。</td></tr>
+        <tr><td class="mono">7/29 19:00</td><td>九州道 <b>益城熊本空港IC〜えびのIC</b>が地震通行止め。うち<b>益城熊本空港IC〜松橋IC</b>・<b>坂本PA〜えびのIC</b>はDMAT車両可。九州中央道 <b>嘉島JCT〜益城料金所</b>も通行止め（DMAT可）。</td></tr>
+        <tr><td class="mono">7/30 11:10<br><span class="pill info">最新</span></td><td><b>益城熊本空港IC〜松橋IC</b>・<b>九州中央道 嘉島JCT〜益城料金所</b>が点検終了で通行止め解除。<b>松橋IC〜えびのIC</b>は継続通行止め、うち<b>坂本PA〜えびのIC</b>はDMAT車両可。</td></tr>
+      </tbody>
+    </table>
+
+    <div class="fig">
+      <svg viewBox="0 0 960 150" width="100%" role="img" aria-label="九州自動車道 熊本〜えびの 区間の通行可否図">
+        <text x="10" y="20" font-size="13" font-weight="700" fill="#15191f">九州自動車道（北 → 南）現況：7/30 11:10時点</text>
+        <line x1="40" y1="70" x2="920" y2="70" stroke="#dcd7cd" stroke-width="2"/>
+        <rect x="40" y="60" width="200" height="20" fill="#3f7d4e" rx="3"/>
+        <rect x="240" y="60" width="180" height="20" fill="#3f7d4e" rx="3"/>
+        <rect x="420" y="60" width="230" height="20" fill="#c8442f" rx="3"/>
+        <rect x="650" y="60" width="270" height="20" fill="#d98a17" rx="3"/>
+        <g font-size="10.5" fill="#15191f" font-family="monospace">
+          <line x1="40" y1="55" x2="40" y2="85" stroke="#6b6459"/><text x="40" y="102" text-anchor="middle">植木/熊本IC</text>
+          <line x1="240" y1="55" x2="240" y2="85" stroke="#6b6459"/><text x="240" y="102" text-anchor="middle">益城熊本空港IC</text>
+          <line x1="420" y1="55" x2="420" y2="85" stroke="#6b6459"/><text x="420" y="102" text-anchor="middle">松橋IC</text>
+          <line x1="520" y1="55" x2="520" y2="85" stroke="#6b6459"/><text x="520" y="118" text-anchor="middle">八代IC</text>
+          <line x1="650" y1="55" x2="650" y2="85" stroke="#6b6459"/><text x="650" y="102" text-anchor="middle">坂本PA</text>
+          <line x1="790" y1="55" x2="790" y2="85" stroke="#6b6459"/><text x="790" y="118" text-anchor="middle">人吉IC</text>
+          <line x1="920" y1="55" x2="920" y2="85" stroke="#6b6459"/><text x="920" y="102" text-anchor="middle">えびのIC</text>
+        </g>
+        <text x="140" y="48" text-anchor="middle" font-size="11" font-weight="700" fill="#3f7d4e">一般通行可</text>
+        <text x="330" y="48" text-anchor="middle" font-size="11" font-weight="700" fill="#3f7d4e">一般通行可（解除）</text>
+        <text x="535" y="48" text-anchor="middle" font-size="11" font-weight="700" fill="#c8442f">通行止め</text>
+        <text x="785" y="48" text-anchor="middle" font-size="11" font-weight="700" fill="#d98a17">DMAT車両のみ可</text>
+      </svg>
+      <div class="legend">
+        <span><i style="background:#3f7d4e"></i>一般通行可（解除／点検終了）</span>
+        <span><i style="background:#d98a17"></i>DMAT車両のみ可（掲示＋隊員証）</span>
+        <span><i style="background:#c8442f"></i>通行止め（走行不可）</span>
+      </div>
+      <div class="cap">※ 八代IC・八代JCTは「松橋IC〜坂本PA（通行止め）」区間内。八代方面へは<b>松橋ICで降り国道3号を南下</b>が現実的（下記④・①参照）。九州中央道 嘉島JCT〜益城料金所は解除済み。数値・区間は変動するため出発直前に<b>JARTIC／DMAT事務局</b>で必ず再確認。</div>
+    </div>
+  </section>
+
+  <section id="s-overview">
+    <div class="sec-head"><span class="num">02</span><h2>さいたま新都心 → 熊本：陸路・空路の全体像</h2></div>
+    <div class="fig">
+      <svg viewBox="0 0 960 120" width="100%" role="img" aria-label="さいたま新都心から熊本までの全体ルート概念図">
+        <line x1="40" y1="60" x2="920" y2="60" stroke="#dcd7cd" stroke-width="3"/>
+        <g font-size="11" fill="#15191f">
+          <circle cx="40" cy="60" r="7" fill="#0b6b5e"/><text x="40" y="88" text-anchor="middle" font-weight="700">さいたま新都心</text>
+          <circle cx="250" cy="60" r="5" fill="#6b6459"/><text x="250" y="88" text-anchor="middle">名古屋（東名/新東名）</text>
+          <circle cx="470" cy="60" r="5" fill="#6b6459"/><text x="470" y="88" text-anchor="middle">大阪（名神）</text>
+          <circle cx="680" cy="60" r="5" fill="#6b6459"/><text x="680" y="88" text-anchor="middle">関門橋（中国/山陽道）</text>
+          <circle cx="920" cy="60" r="7" fill="#c8442f"/><text x="905" y="88" text-anchor="middle" font-weight="700">熊本</text>
+        </g>
+        <text x="480" y="30" text-anchor="middle" font-size="12" font-weight="700" fill="#8f2c1d">陸路 約1,150km／実走 14〜16時間（休憩・交代・仮眠で1.5〜2日行程）</text>
+        <path d="M40,45 Q480,10 920,45" fill="none" stroke="#c8442f" stroke-width="1.5" stroke-dasharray="5 4"/>
+      </svg>
+      <div class="cap">空路は「羽田 → 各空港（約1時間40〜55分）＋空港からレンタカー等で陸路」。新幹線は「大宮 → 博多 → 熊本」で約6時間（博多乗換）。</div>
+    </div>
+    <table>
+      <thead><tr><th style="width:70px">手段</th><th>経路</th><th style="width:120px">所要（目安）</th><th style="width:150px">長所・留意</th></tr></thead>
+      <tbody>
+        <tr><td><b>陸路</b><br>（自走）</td><td>さいたま新都心→首都高→東名/新東名→伊勢湾岸→新名神→名神→中国道→山陽道→関門橋→九州道→熊本/益城熊本空港IC</td><td>約1,150km<br>実走14〜16時間<br>（1.5〜2日行程）</td><td>隊の車両をそのまま現地活動車に。資器材を積載可。反面、長距離・余震・渋滞・疲労管理が課題。交代要員と仮眠計画必須。</td></tr>
+        <tr><td><b>空路＋<br>陸路</b></td><td>羽田→（熊本/福岡/鹿児島）空港→レンタカーで現地</td><td>飛行 約1h40〜55m＋空港以降1〜2h＋手続</td><td>速い。ただし空港での<b>レンタカー確保</b>と<b>燃料・通行証</b>が鍵（下記04）。資器材は宅配便/別送または現地調達。</td></tr>
+        <tr><td><b>鉄道</b><br>（参考）</td><td>大宮→（東京/新横浜）→博多→熊本（新幹線・博多乗換）</td><td>約6時間</td><td>被災状況でJR九州は運転見合わせ実績あり。車両を持てないため参集後の機動力に課題。要運行情報確認。</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="s-airport">
+    <div class="sec-head"><span class="num">03</span><h2>空港はどこから入るのが近いか（熊本／福岡／鹿児島）</h2></div>
+    <table>
+      <thead><tr><th style="width:110px">空港</th><th style="width:150px">熊本市中心まで</th><th>現況・可否</th><th style="width:160px">向く目的地</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><b>熊本空港</b><br>(阿蘇くまもと)</td>
+          <td>約20km／バス50分〜1h・車30〜40分</td>
+          <td><span class="pill ng">要確認</span> 震源近く（益城=震度6強）、<b>滑走路点検中</b>の情報。運航可否は要確認。使えれば全目的地に最短。</td>
+          <td>②③④（市内）に最適。①八代は松橋IC→国道3号。</td>
+        </tr>
+        <tr>
+          <td><b>福岡空港</b></td>
+          <td>約100km／車 通常1.5h（新幹線30〜40分）</td>
+          <td><span class="pill ok">有力</span> 北側の九州道（益城熊本空港IC以北〜松橋IC）は通行可。市街地アクセスが安定。</td>
+          <td><b>市内3拠点②③④に最も確実。</b>①八代へも松橋IC→国道3号。</td>
+        </tr>
+        <tr>
+          <td><b>鹿児島空港</b><br>(霧島市)</td>
+          <td>約175km／車 通常2h超</td>
+          <td><span class="pill dmat">条件付</span> 南から北上。<b>坂本PA〜えびのはDMAT可</b>だが<b>坂本PA〜松橋が通行止め</b>で八代周辺が分断。市内は大回り。</td>
+          <td>①八代は距離的に近いが分断・球磨川沿い土砂リスクで不確実。</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="note teal"><b>結論：</b>第一候補は<b>熊本空港（運航すれば最短）</b>。熊本空港が使えない場合、<b>熊本市内の②③④は福岡空港が近くて確実</b>。<b>①八代（労災）</b>は距離だけなら鹿児島も近いが、現状は坂本PA〜松橋の通行止めで南側が分断されるため、<b>確実性重視なら福岡空港→九州道→松橋IC→国道3号南下</b>。通行止め解除が進めば鹿児島側からの南接近も選択肢に。<b>出発直前にDMAT事務局・JARTICで通行可否を再確認</b>してください。</div>
+  </section>
+
+  <section id="s-rentacar">
+    <div class="sec-head"><span class="num">04</span><h2>空路＋陸路の運用ノート（九州でレンタカー）</h2><span class="hint">業務調整員の手配ポイント</span></div>
+    <div class="grid2">
+      <div class="chk">
+        <h3>レンタカー手配</h3>
+        <ul>
+          <li><b>事前予約を強く推奨</b>。災害時は在庫逼迫。隊の人数・資器材量に合うワゴン/バン/ハイエース級を確保。</li>
+          <li><b>乗り捨て（ワンウェイ）可否</b>と料金、営業所の被災・営業状況を確認。</li>
+          <li>車両に<b>DMAT掲示</b>を掲出、全員<b>隊員証携行</b>（通行止め区間走行の条件）。</li>
+          <li>ETC・任意保険/免責補償（CDW）、車両故障時の連絡先、スタッドレス/悪路装備の要否。</li>
+          <li>受領時に外装・燃料の相互確認（被災後の返却トラブル回避）。</li>
+        </ul>
+      </div>
+      <div class="chk">
+        <h3>燃料・給油</h3>
+        <ul>
+          <li>被災地はSS営業制限・行列・在庫切れの可能性。<b>空港/道中で満タン</b>にして進入。</li>
+          <li>復路・活動用に<b>常時半分以上をキープ</b>する運用ルールを共有。</li>
+          <li>携行缶は消防法・車内保管の安全に留意（原則SSでの給油）。</li>
+          <li>災害時の<b>緊急通行車両向け給油</b>や指定SSの情報を本部で確認。</li>
+        </ul>
+      </div>
+    </div>
+    <div class="note"><b>資器材：</b>空路の場合、医療資器材・個人装備の一部は<b>別送（宅配・別便）または現地調達</b>が前提になります。機内持込・受託手荷物の制限（医療ガス・電池・刃物等）と、到着空港での受取方法を事前に整理しておきます。</div>
+  </section>
+
+  <section id="s-dest">
+    <div class="sec-head"><span class="num">05</span><h2>到着目的地（4拠点）へのルート</h2><span class="hint">タップで地図・経路</span></div>
+    <div class="fig">
+      <svg viewBox="0 0 960 260" width="100%" role="img" aria-label="熊本都市圏の拠点位置関係図">
+        <text x="10" y="20" font-size="13" font-weight="700" fill="#15191f">熊本都市圏の位置関係（概念図・縮尺非対応）</text>
+        <line x1="300" y1="45" x2="300" y2="235" stroke="#b9b2a4" stroke-width="6"/>
+        <text x="300" y="43" text-anchor="middle" font-size="10" fill="#6b6459">九州道</text>
+        <g font-size="10.5" font-family="monospace" fill="#15191f">
+          <circle cx="300" cy="70" r="4" fill="#3f7d4e"/><text x="312" y="73">熊本IC（北・可）</text>
+          <circle cx="300" cy="105" r="4" fill="#3f7d4e"/><text x="312" y="108">益城熊本空港IC（可）</text>
+          <circle cx="300" cy="150" r="4" fill="#3f7d4e"/><text x="312" y="153">松橋IC（可・南端）</text>
+          <circle cx="300" cy="195" r="4" fill="#c8442f"/><text x="312" y="198">八代IC（通行止め）</text>
+        </g>
+        <circle cx="470" cy="105" r="6" fill="#0b6b5e"/><text x="482" y="108" font-size="11" font-weight="700" fill="#0b6b5e">熊本空港（益城）</text>
+        <g font-size="11" font-weight="700">
+          <rect x="150" y="60" width="120" height="22" rx="4" fill="#e3edf6" stroke="#2f5d86"/><text x="210" y="75" text-anchor="middle" fill="#2f5d86">③県庁(中央区)</text>
+          <rect x="150" y="90" width="120" height="22" rx="4" fill="#e6f0e8" stroke="#3f7d4e"/><text x="210" y="105" text-anchor="middle" fill="#3f7d4e">④赤十字(東区)</text>
+          <rect x="150" y="150" width="120" height="22" rx="4" fill="#fbf0db" stroke="#d98a17"/><text x="210" y="165" text-anchor="middle" fill="#9a5a1c">②済生会(南区)</text>
+          <rect x="150" y="205" width="120" height="22" rx="4" fill="#f7e1dc" stroke="#c8442f"/><text x="210" y="220" text-anchor="middle" fill="#8f2c1d">①労災(八代)</text>
+        </g>
+        <path d="M300,150 Q220,180 210,205" fill="none" stroke="#c8442f" stroke-width="1.6" stroke-dasharray="5 4"/>
+        <text x="150" y="192" font-size="10" fill="#8f2c1d">国道3号 南下(≈15-18km)</text>
+      </svg>
+      <div class="cap">概念図です。実際の経路・所要は各カードのGoogleマップ経路リンクで確認してください。</div>
+    </div>
+
+    <div class="cards">
+      <div class="dcard d1">
+        <div class="no">目的地 ①</div>
+        <h3>熊本労災病院</h3>
+        <div class="role">熊本県南 活動拠点本部</div>
+        <div class="row"><span class="lb">住所</span><span>〒866-8533 八代市竹原町1670</span></div>
+        <div class="row"><span class="lb">最寄</span><span>新八代駅／八代IC（現在 本線通行止め）</span></div>
+        <div class="row"><span class="lb">進入</span><span><b>松橋ICで降り国道3号を南下（約15〜18km）</b>。九州道 八代IC・坂本PA〜松橋は通行止め。南（鹿児島）側からは坂本PAまでDMAT可だが八代へは分断。沿岸は津波注意報に留意。</span></div>
+        <div class="btns">
+          <a class="btn primary" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=%E7%86%8A%E6%9C%AC%E5%8A%B4%E7%81%BD%E7%97%85%E9%99%A2%20%E5%85%AB%E4%BB%A3%E5%B8%82%E7%AB%B9%E5%8E%9F%E7%94%BA1670">経路 ↗</a>
+          <a class="btn" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=%E7%86%8A%E6%9C%AC%E5%8A%B4%E7%81%BD%E7%97%85%E9%99%A2">地図 ↗</a>
+        </div>
+      </div>
+
+      <div class="dcard d2">
+        <div class="no">目的地 ②</div>
+        <h3>済生会熊本病院</h3>
+        <div class="role">熊本県央南 活動拠点本部</div>
+        <div class="row"><span class="lb">住所</span><span>〒861-4193 熊本市南区近見5-3-1</span></div>
+        <div class="row"><span class="lb">電話</span><span class="mono">096-351-8000</span></div>
+        <div class="row"><span class="lb">進入</span><span>市南区。<b>松橋IC〜益城熊本空港IC（通行可）</b>から市街地南部へ。福岡空港/熊本空港いずれからも到達しやすい。</span></div>
+        <div class="btns">
+          <a class="btn primary" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=%E6%B8%88%E7%94%9F%E4%BC%9A%E7%86%8A%E6%9C%AC%E7%97%85%E9%99%A2%20%E7%86%8A%E6%9C%AC%E5%B8%82%E5%8D%97%E5%8C%BA%E8%BF%91%E8%A6%8B5-3-1">経路 ↗</a>
+          <a class="btn" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=%E6%B8%88%E7%94%9F%E4%BC%9A%E7%86%8A%E6%9C%AC%E7%97%85%E9%99%A2">地図 ↗</a>
+        </div>
+      </div>
+
+      <div class="dcard d3">
+        <div class="no">目的地 ③</div>
+        <h3>熊本県庁 防災センター</h3>
+        <div class="role">熊本県 保健医療福祉調整本部</div>
+        <div class="row"><span class="lb">住所</span><span>〒862-8570 熊本市中央区水前寺6-18-1（防災センター2F）</span></div>
+        <div class="row"><span class="lb">電話</span><span class="mono">096-333-2811</span></div>
+        <div class="row"><span class="lb">進入</span><span>市中央区・水前寺。<b>益城熊本空港IC/熊本IC（通行可）</b>から東バイパス経由。調整本部＝情報・受援の中枢。</span></div>
+        <div class="btns">
+          <a class="btn primary" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=%E7%86%8A%E6%9C%AC%E7%9C%8C%E5%BA%81%20%E7%86%8A%E6%9C%AC%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E6%B0%B4%E5%89%8D%E5%AF%BA6-18-1">経路 ↗</a>
+          <a class="btn" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=%E7%86%8A%E6%9C%AC%E7%9C%8C%E5%BA%81%E9%98%B2%E7%81%BD%E3%82%BB%E3%83%B3%E3%82%BF%E3%83%BC">地図 ↗</a>
+        </div>
+      </div>
+
+      <div class="dcard d4">
+        <div class="no">目的地 ④</div>
+        <h3>熊本赤十字病院</h3>
+        <div class="role">基幹災害拠点病院</div>
+        <div class="row"><span class="lb">住所</span><span>熊本市東区長嶺南2-1-1</span></div>
+        <div class="row"><span class="lb">最寄</span><span>東バイパス沿い（市東区）</span></div>
+        <div class="row"><span class="lb">進入</span><span><b>益城熊本空港IC/熊本IC（通行可）</b>から東バイパスへ。熊本空港からも近い。市街東部で北側九州道からのアクセス良好。</span></div>
+        <div class="btns">
+          <a class="btn primary" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=%E7%86%8A%E6%9C%AC%E8%B5%A4%E5%8D%81%E5%AD%97%E7%97%85%E9%99%A2%20%E7%86%8A%E6%9C%AC%E5%B8%82%E6%9D%B1%E5%8C%BA%E9%95%B7%E5%B6%BA%E5%8D%972-1-1">経路 ↗</a>
+          <a class="btn" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=%E7%86%8A%E6%9C%AC%E8%B5%A4%E5%8D%81%E5%AD%97%E7%97%85%E9%99%A2">地図 ↗</a>
+        </div>
+      </div>
+    </div>
+    <div class="note"><b>共通注意：</b>いずれも本部が<b>正式な参集先・進入経路・駐車場所</b>を指定します。到着前にEMIS／活動拠点本部へ連絡し、受援側の指示（参集受付・車両動線・待機場所）に従ってください。</div>
+  </section>
+
+  <section id="s-logi">
+    <div class="sec-head"><span class="num">06</span><h2>業務調整員として集めておく情報（非医療・体系版）</h2><span class="hint">ロジ／調整の視点</span></div>
+    <div class="note teal"><b>使い方：</b>出動前〜道中〜到着後で、担当（ロジ・情報・記録・安全）ごとに割り振って収集・更新します。<b>正本はEMIS・本部・自治体の公式情報</b>。本アプリのクロノロ／連絡先／現状分析に随時記録し、交代時はファイルで引き継ぎます。</div>
+    <div class="grid2">
+      <div class="chk">
+        <h3>A. 指揮・本部連携</h3>
+        <ul>
+          <li>参集要請の<b>正式文書</b>・派遣番号・活動期間・交代計画</li>
+          <li><b>EMIS</b>のアカウント/参集ボタン、活動拠点本部・SCU・調整本部の場所と連絡先</li>
+          <li>指揮系統図（統括DMAT・ロジ責任者・都道府県調整本部）と報告ライン</li>
+          <li>ミーティング時刻（本部会議・ブリーフィング）、様式（活動報告・引継ぎ）</li>
+          <li>受援側の窓口（病院・自治体の受付、車両動線、待機場所）</li>
+        </ul>
+      </div>
+      <div class="chk">
+        <h3>B. 移動・車両・通行</h3>
+        <ul>
+          <li><b>緊急通行車両確認標章</b>・DMAT掲示・隊員証（通行止め区間の条件）</li>
+          <li>JARTIC/NEXCO/県道規制、<b>DMAT事務局の通行可否通知</b>の最新</li>
+          <li>燃料計画（満タン進入・半分キープ・指定SS）、ETC・高速料金減免</li>
+          <li>駐車・車両待機場所、悪路/冠水/土砂の迂回、洗車・整備</li>
+          <li>レンタカー予約・乗り捨て・保険（空路時）</li>
+        </ul>
+      </div>
+      <div class="chk">
+        <h3>C. 宿泊・生活・糧食</h3>
+        <ul>
+          <li>宿舎（ベースキャンプ/ホテル/車中泊）の場所・可否・予約</li>
+          <li><b>水・食料・行動食</b>の携行量と現地調達可否（被災地で買わない前提）</li>
+          <li>トイレ（携帯トイレ）・入浴・洗濯・ごみ・衛生</li>
+          <li>寒暖対策・雨具・寝具、<b>熱中症/低体温</b>対策</li>
+          <li>現金（電子決済不可の想定）・領収書管理</li>
+        </ul>
+      </div>
+      <div class="chk">
+        <h3>D. 通信・電源・記録</h3>
+        <ul>
+          <li>携帯輻輳/停電に備え<b>衛星電話・MCA/簡易無線・予備バッテリー・モバイルWi-Fi</b></li>
+          <li>安否手段（171/web171/SNS一斉）、隊内連絡網</li>
+          <li><b>クロノロ・活動日誌・写真記録</b>の様式と担当、時刻同期</li>
+          <li>PC/タブレット・充電（車載インバータ）、予備電源・ケーブル</li>
+          <li>経費・勤怠・車両日報の記録、個人情報の取扱い</li>
+        </ul>
+      </div>
+      <div class="chk">
+        <h3>E. 安全管理（CSCA/自隊防護）</h3>
+        <ul>
+          <li>余震・<b>津波注意報</b>（沿岸/八代方面）・土砂・建物危険度判定の状況</li>
+          <li>ヘルメット・安全靴・手袋・ヘッドライト・救急個人携行品</li>
+          <li>活動時間管理・休憩・<b>メンタルヘルス</b>・体調申告</li>
+          <li>危険エリア（浸水・崩落・通行不能）と退避経路の共有</li>
+          <li>停電・断水・ガス・通信の<b>ライフライン</b>状況</li>
+        </ul>
+      </div>
+      <div class="chk">
+        <h3>F. 地域・受援情報</h3>
+        <ul>
+          <li>自治体<b>災害対策本部</b>・保健所・保健医療福祉調整本部の動き</li>
+          <li>避難所の開設状況・医療ニーズ（Yahoo!避難所マップ/自治体）</li>
+          <li>医療機関の被災・受入・転送要請（EMIS・本アプリ医療機関タブ）</li>
+          <li>気象（<b>キキクル</b>・大雨/土砂）・天候の推移、日没時刻</li>
+          <li>物資集積拠点・給水・支援団体（他DMAT/JMAT/日赤/消防/自衛隊）との連携</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="s-links">
+    <div class="sec-head"><span class="num">07</span><h2>現地で開く 一次情報リンク</h2></div>
+    <table>
+      <tbody>
+        <tr><td style="width:150px"><b>DMAT事務局</b></td><td><a target="_blank" rel="noopener" href="https://www.dmat.jp/">https://www.dmat.jp/</a>（派遣・通行可否通知）</td></tr>
+        <tr><td><b>EMIS</b></td><td><a target="_blank" rel="noopener" href="https://www.wds.emis.go.jp/">https://www.wds.emis.go.jp/</a>（医療機関・参集）</td></tr>
+        <tr><td><b>JARTIC 道路交通</b></td><td><a target="_blank" rel="noopener" href="https://www.jartic.or.jp/">https://www.jartic.or.jp/</a>（通行止め・規制）</td></tr>
+        <tr><td><b>NEXCO西日本</b></td><td><a target="_blank" rel="noopener" href="https://www.w-nexco.co.jp/traffic/">https://www.w-nexco.co.jp/traffic/</a>（九州道）</td></tr>
+        <tr><td><b>気象庁 津波/地震</b></td><td><a target="_blank" rel="noopener" href="https://www.jma.go.jp/bosai/map.html#contents=tsunami">津波</a> ／ <a target="_blank" rel="noopener" href="https://www.jma.go.jp/bosai/map.html#contents=earthquake">地震</a> ／ <a target="_blank" rel="noopener" href="https://www.jma.go.jp/bosai/risk/">キキクル</a></td></tr>
+        <tr><td><b>熊本県</b></td><td><a target="_blank" rel="noopener" href="https://www.pref.kumamoto.jp/">https://www.pref.kumamoto.jp/</a>（災対本部・避難）</td></tr>
+      </tbody>
+    </table>
+    <div class="note teal">本資料は<b>DMAT災害医療支援プラットフォーム</b>・<b>熊本地震ダッシュボード</b>と併用してください。医療機関の被災・転送要請はアプリの「医療機関」タブ、複合災害の状況はダッシュボードの各カードから随時確認できます。 <span style="display:inline-block;margin-top:8px"><a class="btn primary" href="index.html">🏥 プラットフォームへ戻る</a> <a class="btn" href="kumamoto_earthquake_dashboard.html">🌐 地震ダッシュボード</a></span></div>
+  </section>
+
+  <div class="disclaimer">
+    <b>免責・運用上の注意</b><br>
+    本資料は業務調整員・隊員説明の<b>参考</b>です。<b>参集先・移動手段・進入経路は必ず所属DMAT指定医療機関／都道府県災害対策本部／DMAT事務局・EMISの正式指示を最優先</b>してください。高速道路の通行可否は変動します（本資料の区間は<b>DMAT事務局通知 7/30 11:10時点</b>の要約）。出発直前および道中で<b>JARTIC／NEXCO西日本／DMAT事務局</b>の最新を必ず再確認してください。所要時間・距離は平常時の目安で、災害時・渋滞・規制で大きく変わります。津波注意報・余震・土砂災害に常に警戒し、自隊の安全（CSCA）を最優先に行動してください。
+  </div>
+  <footer>DMAT事務局通知・気象庁・自治体公式・各社公表に基づく整理 ／ 資料作成：2026/7/30 ／ 通行可否基準：7/30 11:10</footer>
+</main>
+</body>
+</html>

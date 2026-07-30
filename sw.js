@@ -1,7 +1,7 @@
 /* DMAT支援プラットフォーム Service Worker
    オフライン動作のためのキャッシュ制御。
    バージョンを上げると古いキャッシュを破棄して更新します。 */
-const CACHE_VERSION = 'dmat-v5';
+const CACHE_VERSION = 'dmat-v6';
 const CORE_CACHE = CACHE_VERSION + '-core';
 const RUNTIME_CACHE = CACHE_VERSION + '-runtime';
 
@@ -10,6 +10,7 @@ const CORE_ASSETS = [
   './',
   './index.html',
   './kumamoto_earthquake_dashboard.html',
+  './route_briefing_kumamoto.html',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',

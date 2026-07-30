@@ -1415,6 +1415,10 @@ renderers.links=function(){
       <div class="rc-title" style="font-size:15px">🌐 熊本県 震度7 地震情報ダッシュボードを開く <span style="color:var(--accent)">↗</span></div>
       <div class="rc-desc">複合災害ステータス・一次情報・被害・避難・交通・通信・DMATルート・津波余震・大雨キキクルを1画面に集約した災害情報ページ（同梱・オフライン対応）。</div>
       <div class="rc-meta">kumamoto_earthquake_dashboard.html</div></a>`;
+    html+=`<a class="res-card" href="route_briefing_kumamoto.html" target="_blank" rel="noopener" style="text-decoration:none;color:inherit;display:block;border:1.5px solid var(--accent);background:linear-gradient(180deg,rgba(11,107,94,.12),rgba(11,107,94,.02));margin-bottom:16px">
+      <div class="rc-title" style="font-size:15px">🚗 参集ルート説明資料（さいたま新都心→熊本）を開く <span style="color:var(--accent)">↗</span></div>
+      <div class="rc-desc">陸路・空路の比較、空港別（熊本/福岡/鹿児島）の可否、九州道の通行止め区間図、4活動拠点へのルート、業務調整員の非医療チェックリストを収録（同梱・オフライン対応）。</div>
+      <div class="rc-meta">route_briefing_kumamoto.html</div></a>`;
     LINKS.forEach(g=>{
       html+=`<div class="sectitle"><span class="em">🔗</span>${esc(g.group)}</div><div class="grid g2" style="margin-bottom:16px">`;
       g.items.forEach(it=>{html+=`<a class="res-card" href="${it.u}" target="_blank" rel="noopener" style="text-decoration:none;color:inherit">
